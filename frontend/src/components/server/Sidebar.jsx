@@ -1,21 +1,39 @@
-import React from 'react';
-import { Box, List, Divider } from '@mui/material';
-import { DashboardOutlined, StorefrontOutlined, PeopleAltOutlined } from '@mui/icons-material';
+import React, { useState } from 'react';
+import { Box, List, Divider, IconButton } from '@mui/material';
+import { DashboardOutlined, StorefrontOutlined, PeopleAltOutlined, ExpandLess, ExpandMore } from '@mui/icons-material';
 import Item from './Item';
-import headerLogo from '../../assets/images/header-logo.svg'; // Adjust the path as necessary
+import headerLogo from '../../assets/images/header-logo.svg'; 
 
 const Sidebar = () => {
+  const [isExpanded, setIsExpanded] = useState(true);
+
+  const toggleSidebar = () => {
+    setIsExpanded(!isExpanded);
+  };
+
   return (
-    <Box sx={{ width: 190, backgroundColor: '#E98EAD', height: '100vh', fontSize: '0.875rem' }} className="font-montserrat">
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 1, marginTop: 1, marginBottom: 2 }}>
-        <img src={headerLogo} alt="Header Logo" style={{ maxWidth: '100%', height: 'auto' }} />
+    <Box sx={{ width: isExpanded ? 190 : 60, backgroundColor: '#E98EAD', height: '100vh', fontSize: '0.875rem', transition: 'width 0.3s', position: 'relative' }} className="font-montserrat">
+      <Box sx={{ display: 'flex', justifyContent: isExpanded ? 'space-between' : 'center', alignItems: 'center', padding: 1, marginTop: 1, marginBottom: 2 }}>
+        {isExpanded && <img src={headerLogo} alt="Header Logo" style={{ maxWidth: '100%', height: 'auto' }} />}
       </Box>
-      <Divider sx={{ backgroundColor: 'white', width: '80%', margin: '0 auto' }} />
+      <Divider sx={{ backgroundColor: 'white', width: isExpanded ? '80%' : '100%', margin: '0 auto' }} />
       <List>
-        <Item title="Dashboard" path="/admin/dashboard" icon={<DashboardOutlined />} />
-        <Item title="Products" path="/admin/products" icon={<StorefrontOutlined />} />
-        <Item title="Users" path="/admin/users" icon={<PeopleAltOutlined />} />
+        <Item title="Dashboard" path="/admin/dashboard" icon={<DashboardOutlined />} isExpanded={isExpanded} />
+        <Item title="Products" path="/admin/products" icon={<StorefrontOutlined />} isExpanded={isExpanded} />
+        <Item title="Users" path="/admin/users" icon={<PeopleAltOutlined />} isExpanded={isExpanded} />
       </List>
+      <IconButton
+        onClick={toggleSidebar}
+        sx={{
+          position: 'absolute',
+          bottom: 16,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          color: 'white',
+        }}
+      >
+        {isExpanded ? <ExpandLess /> : <ExpandMore />}
+      </IconButton>
     </Box>
   );
 };

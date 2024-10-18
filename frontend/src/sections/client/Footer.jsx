@@ -4,7 +4,7 @@ import { footerLinks, socialMedia } from "../../constants";
 
 const Footer = () => {
   return (
-    <footer className="max-container">
+    <footer className="bg-coral-red">
       <div className="flex justify-between items-start gap-20 flex-wrap max-lg:flex-col">
         <div className="flex flex-col items-start">
           <a href="/">

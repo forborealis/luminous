@@ -7,6 +7,8 @@ import {
   Services,
   SuperQuality,
 } from "./sections/client";
+import Login from "./components/client/Login";
+import Signup from "./components/client/Signup";
 import Products from "./components/client/Products";
 import Dashboard from "./components/server/Dashboard"; // Import the admin dashboard
 
@@ -38,6 +40,8 @@ const App = () => {
                   </>
                 } />
                 <Route path="/products" element={<Products />} />
+                <Route path="/login" element={<Login />}/>
+                <Route path="/signup" element={<Signup />} />
               </Routes>
             </main>
           </>

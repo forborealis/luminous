@@ -1,34 +1,20 @@
 import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { hamburger } from "../../assets/icons";
 import { headerLogo } from "../../assets/images";
 import { navLinks } from "../../constants";
-import SignInSignUpModal from "./SignInSignUp";
 
 const Nav = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [loggedIn, setLoggedIn] = useState(
     localStorage.getItem("loggedIn") === "true"
   );
-
-  const openModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
-
-  const handleSignIn = (success) => {
-    setLoggedIn(success);
-    if (success) {
-      localStorage.setItem("loggedIn", true);
-    }
-  };
+  const navigate = useNavigate();
 
   const handleSignOut = () => {
     setLoggedIn(false);
     localStorage.removeItem("loggedIn");
+    navigate("/"); // Navigate to home page after sign out
   };
 
   const handleScroll = () => {
@@ -53,18 +39,17 @@ const Nav = () => {
       }`}
     >
       <div className="flex items-center justify-between max-w-6xl mx-auto">
-        <a href="/" className="text-2xl font-semibold">
+        <Link to="/" className="text-2xl font-semibold">
           <img src={headerLogo} alt="logo" className="w-32" />
-        </a>
+        </Link>
         <ul className="hidden space-x-6 lg:flex">
-          {/* Only keep the Products link functional */}
           <li>
-            <a
-              href="/products"  // Link to Products page
-              className="hover:text-pink-500 transition duration-300"
+            <Link
+              to="/products"
+              className="hover:text-coral-red transition duration-300"
             >
               Products
-            </a>
+            </Link>
           </li>
         </ul>
         {loggedIn ? (
@@ -78,25 +63,20 @@ const Nav = () => {
           </div>
         ) : (
           <div className="hidden lg:flex space-x-4 items-center">
-            <button
-              className="text-white bg-coral-red-500 hover:bg-blue-600 px-4 py-2 rounded"
-              onClick={openModal}
+            <Link
+              to="/login"
+              className="hover:text-coral-red transition duration-300"
             >
-              Sign in
-            </button>
+              Login
+            </Link>
           </div>
         )}
         <div className="lg:hidden">
-          <button className="text-white" onClick={openModal}>
+          <Link to="/login" className="text-white">
             <img src={hamburger} alt="hamburger icon" className="w-6 h-6" />
-          </button>
+          </Link>
         </div>
       </div>
-      <SignInSignUpModal
-        isOpen={isModalOpen}
-        onClose={closeModal}
-        onSignIn={handleSignIn}
-      />
     </header>
   );
 };

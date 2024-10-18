@@ -1,4 +1,4 @@
-import { makeup2 } from "../../assets/images";
+import { makeup4 } from "../../assets/images";
 import { Button } from "../../components/client";
 
 const SuperQuality = () => {
@@ -14,12 +14,8 @@ const SuperQuality = () => {
           <span className="text-coral-red">Quality </span> Makeup Products
         </h2>
         <p className="mt-4 lg:max-w-lg info-text">
-          Ensuring premium comfort and style, our meticulously crafted footwear
-          is designed to elevate your experience, providing you with unmatched
-          quality, innovation, and a touch of elegance.
-        </p>
-        <p className="mt-6 lg:max-w-lg info-text">
-          Our dedication to detail and excellence ensures your satisfaction
+        Each product is crafted with care to deliver long-lasting wear and radiant results.
+        Perfect for every skin tone, our makeup line offers something for every cosmetics lover.
         </p>
         <div className="mt-11">
           <Button label="View details" />
@@ -27,7 +23,7 @@ const SuperQuality = () => {
       </div>
       <div className="flex flex-1 justify-center items-center">
         <img
-          src={makeup2}
+          src={makeup4}
           alt="Top Quality Makeup"
           className="h-120 rounded-lg object-contain" 
         />

@@ -9,6 +9,7 @@ import {
 import {
   makeup1,
   makeup2,
+  makeup3,
   customer1,
   customer2,
   shoe4,
@@ -24,9 +25,15 @@ export const navLinks = [
   { href: "#contact-us", label: "Contact Us" },
 ];
 
-export const shoes = [
+export const makeups = [
   {
-    bigShoe: makeup1,
+    makeup: makeup1,
+  },
+  {
+    makeup: makeup2,
+  },
+  {
+    makeup: makeup3,
   },
 ];
 

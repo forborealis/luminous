@@ -1,5 +1,7 @@
 import makeup1 from './makeup1.png'
-import makeup2 from './makeup2.jpg'
+import makeup2 from './makeup2.png'
+import makeup3 from './makeup3.png'
+import makeup4 from './makeup4.jpg'
 
 
 import customer1 from './customer1.jpeg'
@@ -20,6 +22,9 @@ import shoe8 from './shoe8.svg'
 export {
     makeup1,
     makeup2,
+    makeup3, 
+    makeup4, 
+
 
     customer1,
     customer2,

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import AvatarEditorComponent from './AvatarEditor';
 
 const Signup = () => {
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   const [contactNumber, setContactNumber] = useState('');
   const [address, setAddress] = useState('');
   const [password, setPassword] = useState('');
@@ -15,20 +16,17 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const formData = new FormData();
-    formData.append('name', name);
-    formData.append('email', email);
-    formData.append('contactNumber', contactNumber);
-    formData.append('address', address);
-    formData.append('password', password);
-    formData.append('avatar', avatar);
+    const formData = {
+      email,
+      name,
+      contactNumber,
+      address,
+      password,
+      avatar
+    };
 
     try {
-      const response = await axios.post('http://localhost:5000/api/v1/register', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      const response = await axios.post('http://localhost:5000/api/v1/register', formData);
 
       if (response.data.success) {
         navigate('/login');
@@ -40,28 +38,11 @@ const Signup = () => {
     }
   };
 
-  const handleAvatarChange = (e) => {
-    setAvatar(e.target.files[0]);
-  };
-
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 font-montserrat">
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
         <h2 className="text-2xl font-bold mb-6 font-palanquin">Sign Up</h2>
         <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-            <label className="block text-gray-700 mb-2 font-montserrat" htmlFor="name">
-              Name
-            </label>
-            <input
-              type="text"
-              id="name"
-              className="w-full px-3 py-2 border rounded font-montserrat"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
           <div className="mb-4">
             <label className="block text-gray-700 mb-2 font-montserrat" htmlFor="email">
               Email
@@ -72,6 +53,19 @@ const Signup = () => {
               className="w-full px-3 py-2 border rounded font-montserrat"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-2 font-montserrat" htmlFor="name">
+              Name
+            </label>
+            <input
+              type="text"
+              id="name"
+              className="w-full px-3 py-2 border rounded font-montserrat"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               required
             />
           </div>
@@ -118,13 +112,7 @@ const Signup = () => {
             <label className="block text-gray-700 mb-2 font-montserrat" htmlFor="avatar">
               Upload Avatar
             </label>
-            <input
-              type="file"
-              id="avatar"
-              className="w-full px-3 py-2 border rounded font-montserrat"
-              onChange={handleAvatarChange}
-              required
-            />
+            <AvatarEditorComponent setAvatar={setAvatar} />
           </div>
           {error && <p className="text-red-500 mb-4 font-montserrat">{error}</p>}
           <button

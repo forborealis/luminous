@@ -1,30 +1,23 @@
-// server.js
+const app = require('./app');
+const connectDatabase = require('./config/database');
+const cloudinary = require('cloudinary').v2;
+const dotenv = require('dotenv');
 
-// Import required modules
-const express = require('express');
-const mongoose = require('mongoose');
-require('dotenv').config(); // Load environment variables from .env file
+// Load environment variables
+dotenv.config({ path: './config/.env' });
 
-const app = express();
+// Connect to database
+connectDatabase();
 
-// Middleware to parse JSON (optional, depends on your use case)
-app.use(express.json());
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
-// Get MongoDB URI from environment variables
-const mongoUri = process.env.MONGO_URI;
-
-if (!mongoUri) {
-  console.error('MongoDB URI is not defined in environment variables');
-  process.exit(1);
-}
-
-// Connect to MongoDB
-mongoose.connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('MongoDB connected successfully'))
-  .catch(err => console.error('MongoDB connection error:', err));
-
-// Your other server code here...
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+// Start the server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server started on port ${PORT} in ${process.env.NODE_ENV} mode`);
 });

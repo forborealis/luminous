@@ -13,7 +13,8 @@ import Products from "./components/client/Products";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; 
 import VerifyEmail from './components/client/VerifyEmail';
-import Dashboard from "./components/server/Dashboard"; // Import the admin dashboard
+import Dashboard from "./components/server/Dashboard"; 
+import Shop from './components/client/Shop';
 
 const App = () => {
   return (
@@ -47,7 +48,8 @@ const App = () => {
                   <Route path="/products" element={<Products />} />
                   <Route path="/login" element={<Login />}/>
                   <Route path="/signup" element={<Signup />} />
-                  <Route path="/verify-email" element={<VerifyEmail />} /> {/* Add VerifyEmail route */}
+                  <Route path="/verify-email" element={<VerifyEmail />} /> 
+                  <Route path="/shop" element={<Shop />} />
                 </Routes>
               </main>
             </>

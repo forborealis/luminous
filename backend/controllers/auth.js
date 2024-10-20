@@ -1,4 +1,4 @@
-const User = require('../models/User');
+const User = require('../models/user');
 const cloudinary = require('cloudinary').v2;
 const jwt = require('jsonwebtoken');
 const sendEmail = require('../utils/email');
@@ -99,3 +99,47 @@ exports.verifyEmail = async (req, res) => {
       });
     }
   };
+
+  exports.loginUser = async (req, res) => {
+    try {
+      const { email, password } = req.body;
+  
+      // Check if email and password are provided
+      if (!email || !password) {
+        return res.status(400).json({ success: false, message: 'Please provide email and password' });
+      }
+  
+      // Find user by email
+      const user = await User.findOne({ email }).select('+password');
+  
+      if (!user) {
+        return res.status(401).json({ success: false, message: 'Invalid email or password' });
+      }
+  
+      // Check if user is verified
+      if (user.status !== 'Verified') {
+        return res.status(401).json({ success: false, message: 'Your account is not verified' });
+      }
+
+      // Check if password matches
+    const isPasswordMatched = await user.comparePassword(password);
+
+    if (!isPasswordMatched) {
+      return res.status(401).json({ success: false, message: 'Invalid email or password' });
+    }
+
+        // Generate JWT token
+        const token = user.getJwtToken();
+
+        res.status(200).json({
+          success: true,
+          token,
+        });
+      } catch (error) {
+        console.error('Error in loginUser:', error);
+        res.status(500).json({
+          success: false,
+          message: 'Server Error',
+        });
+      }
+    };

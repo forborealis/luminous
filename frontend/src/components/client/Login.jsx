@@ -13,6 +13,25 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Clear previous error
+    setError('');
+
+    // Client-side validation
+    if (!email && !password) {
+      setError('Email and password are required.');
+      return;
+    }
+
+    if (!email) {
+      setError('Email is required.');
+      return;
+    }
+
+    if (!password) {
+      setError('Password is required.');
+      return;
+    }
+
     try {
       const response = await axios.post('http://localhost:5000/api/v1/login', { email, password });
 

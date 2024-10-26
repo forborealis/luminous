@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import AvatarEditorComponent from './AvatarEditor';
+import AvatarEditorComponent from './AvatarEditor'; 
+import { toast } from 'react-toastify'; 
+import 'react-toastify/dist/ReactToastify.css'; 
 
 const Signup = () => {
   const [email, setEmail] = useState('');
@@ -9,12 +11,14 @@ const Signup = () => {
   const [contactNumber, setContactNumber] = useState('');
   const [address, setAddress] = useState('');
   const [password, setPassword] = useState('');
-  const [avatar, setAvatar] = useState(null);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const avatarEditorRef = useRef(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const avatar = avatarEditorRef.current.getCroppedImage();
 
     const formData = {
       email,
@@ -29,6 +33,7 @@ const Signup = () => {
       const response = await axios.post('http://localhost:5000/api/v1/register', formData);
 
       if (response.data.success) {
+        toast.success('Registration successful! Please check your email to verify your account.'); 
         navigate('/login');
       } else {
         setError(response.data.message);
@@ -112,7 +117,7 @@ const Signup = () => {
             <label className="block text-gray-700 mb-2 font-montserrat" htmlFor="avatar">
               Upload Avatar
             </label>
-            <AvatarEditorComponent setAvatar={setAvatar} />
+            <AvatarEditorComponent ref={avatarEditorRef} />
           </div>
           {error && <p className="text-red-500 mb-4 font-montserrat">{error}</p>}
           <button

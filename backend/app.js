@@ -3,6 +3,8 @@ const app = express();
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const auth = require('./routes/auth');
+const productRoutes = require('./routes/products');
+
 
 // Middleware
 app.use(cors({
@@ -20,6 +22,8 @@ app.get('/api/v1/test', (req, res) => {
 
 // Routes
 app.use('/api/v1', auth);
+app.use('/api/v1', productRoutes);
+
 
 // Global error handler
 app.use((err, req, res, next) => {

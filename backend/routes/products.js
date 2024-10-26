@@ -1,21 +1,25 @@
 const express = require('express');
 const router = express.Router();
-const upload = require("../utils/multer");
+const {
+  createProduct,
+  getProducts,
+  getProductById,
+  updateProduct,
+  softDeleteProduct,
+  restoreProduct,
+  permanentlyDeleteProduct,
+  getDeletedProducts // Add the function here
+} = require('../controllers/ProductController');
 
-const { getProducts, 
-    getSingleProduct,
-    getAdminProducts,
-    deleteProduct,
-    newProduct,
-    updateProduct,
- } = require('../controllers/product');
+const multer = require('../config/multer'); // Import multer configuration
 
- const { isAuthenticatedUser, } = require('../middlewares/auth');
+router.get('/products/deleted', getDeletedProducts); // Route to fetch deleted products
+router.post('/products', multer.array('images', 4), createProduct);
+router.put('/products/:id', multer.array('images', 4), updateProduct);
+router.get('/products/:id', getProductById);
+router.get('/products', getProducts);
+router.delete('/products/:id', softDeleteProduct); // Soft delete route
+router.put('/products/restore/:id', restoreProduct); // Restore product route
+router.delete('/products/permanent/:id', permanentlyDeleteProduct); // Permanent delete route
 
-router.get('/products', getProducts)
-router.get('/product/:id', getSingleProduct)
-router.get('/admin/products', getAdminProducts);
-// router.delete('/admin/product/:id', isAuthenticatedUser, deleteProduct);
-router.route('/admin/product/:id', isAuthenticatedUser, ).put(updateProduct).delete(deleteProduct);
-router.post('/admin/product/new', newProduct);
 module.exports = router;

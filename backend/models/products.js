@@ -3,53 +3,41 @@ const mongoose = require('mongoose');
 const productSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true,
-    trim: true
-  },
-  price: {
-    type: Number,
-    required: true,
-    min: 0
+    required: [true, 'Product name is required'],
   },
   description: {
     type: String,
-    trim: true,
+    required: [true, 'Product description is required'],
+  },
+  price: {
+    type: Number,
+    required: [true, 'Product price is required'],
   },
   category: {
     type: String,
-    required: true,
-    enum: ['Lip', 'Foundation', 'Eyeshadow', 'Mascara', 'Blush', 'Other'], 
+    enum: ['Lip', 'Blush', 'Foundation', 'Eyeshadow', 'Eyebrow', 'Powder'],
+    required: [true, 'Product category is required'],
   },
-  colors: [{
-    type: String,
-    required: true,
-  }],
-  images: [{
-    public_id: {
-      type: String,
-      required: true, 
-    },
-    url: {
-      type: String,
-      required: true, // URL to access the image
-    }
-  }],
   stock: {
     type: Number,
-    required: true,
-    min: 0,  
-    default: 0
+    default: 0,
   },
-  numOfReviews: {
-    type: Number,
-    default: 0, 
+  images: {
+    type: [String],
+    required: true,
+  },
+  deleted: {
+    type: Boolean,
+    default: false, // Mark as not deleted initially
   },
   createdAt: {
     type: Date,
-    default: Date.now
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
   }
 });
 
-const Product = mongoose.model('Product', productSchema);
-
-module.exports = Product;
+module.exports = mongoose.model('Product', productSchema);

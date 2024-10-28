@@ -4,6 +4,7 @@ import {
   Footer,
   Hero
 } from "./sections/client";
+import ProtectedRoute from './components/ProtectedRoute';
 import Login from "./components/client/Login";
 import Signup from "./components/client/Signup";
 import Products from "./components/client/Products";
@@ -40,10 +41,10 @@ const App = () => {
                   <Route path="/login" element={<Login />}/>
                   <Route path="/signup" element={<Signup />} />
                   <Route path="/verify-email" element={<VerifyEmail />} /> 
-                  <Route path="/shop" element={<Shop />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/edit-profile" element={<EditProfile />} />
-                  <Route path="/edit-password" element={<EditPassword />} />
+                  <Route path="/shop" element={<ProtectedRoute element={<Shop />} />} />
+                  <Route path="/profile" element={<ProtectedRoute element={<Profile />} />} />
+                  <Route path="/edit-profile" element={<ProtectedRoute element={<EditProfile />} />} />
+                  <Route path="/edit-password" element={<ProtectedRoute element={<EditPassword />} />} />
                 </Routes>
               </main>
             </>

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { toast } from 'react-toastify'; // Import toast
-import 'react-toastify/dist/ReactToastify.css'; // Import toast styles
-import { authenticate, getToken} from '../../utils/helpers';
+import { toast } from 'react-toastify'; 
+import 'react-toastify/dist/ReactToastify.css';
+import { authenticate, getToken } from '../../utils/helpers';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -37,6 +37,13 @@ const Login = () => {
       navigate(redirect || '/shop');
     }
   }, [navigate, redirect]);
+
+  useEffect(() => {
+    if (location.state?.unauthorized) {
+      toast.error('Unauthorized access.');
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate, location.pathname]);
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 font-montserrat">

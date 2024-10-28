@@ -1,7 +1,9 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { toast } from 'react-toastify'; // Import toast
+import { toast } from 'react-toastify'; 
+import { Hero } from '../../sections/client';
+import {Footer} from '../../sections/client';
 
 const Shop = () => {
   const navigate = useNavigate();
@@ -36,8 +38,9 @@ const Shop = () => {
 
   return (
     <div>
-      <h1>Shop Home Page</h1>
-      {/* Add your shop home page content here */}
+      <Hero />
+      <h1 className="text-3xl font-bold text-center my-8">Shop</h1>
+      <Footer />
     </div>
   );
 };

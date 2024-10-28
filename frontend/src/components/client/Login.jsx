@@ -1,26 +1,22 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify'; // Import toast
 import 'react-toastify/dist/ReactToastify.css'; // Import toast styles
+import { authenticate, getToken} from '../../utils/helpers';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirect = location.search ? new URLSearchParams(location.search).get('redirect') : '';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Clear previous error
     setError('');
-
-    // Client-side validation
-    if (!email && !password) {
-      setError('Email and password are required.');
-      return;
-    }
 
     if (!email) {
       setError('Email is required.');
@@ -32,20 +28,15 @@ const Login = () => {
       return;
     }
 
-    try {
-      const response = await axios.post('http://localhost:5000/api/v1/login', { email, password });
-
-      if (response.data.success) {
-        localStorage.setItem('token', response.data.token); // Store token in local storage
-        toast.success('Login successful!');
-        navigate('/shop');
-      } else {
-        setError(response.data.message);
-      }
-    } catch (error) {
-      setError('Invalid email or password');
-    }
+    await authenticate(email, password, navigate, setError);
   };
+
+  useEffect(() => {
+    const token = getToken();
+    if (token) {
+      navigate(redirect || '/shop');
+    }
+  }, [navigate, redirect]);
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 font-montserrat">

@@ -3,18 +3,21 @@ import { Link, useNavigate } from "react-router-dom";
 import { hamburger } from "../../assets/icons";
 import { headerLogo } from "../../assets/images";
 import { navLinks } from "../../constants";
+import { useLocation } from "react-router-dom";
+import ExitToAppIcon from '@mui/icons-material/ExitToApp'; 
 
 const Nav = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [loggedIn, setLoggedIn] = useState(
-    localStorage.getItem("loggedIn") === "true"
-  );
+  const [loggedIn, setLoggedIn] = useState(!!localStorage.getItem("token"));
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSignOut = () => {
     setLoggedIn(false);
-    localStorage.removeItem("loggedIn");
-    navigate("/"); // Navigate to home page after sign out
+    localStorage.removeItem("token");
+    window.dispatchEvent(new Event('loginStateChange')); 
+    navigate("/login");
   };
 
   const handleScroll = () => {
@@ -27,10 +30,20 @@ const Nav = () => {
 
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);
+    window.addEventListener("loginStateChange", () => {
+      setLoggedIn(!!localStorage.getItem("token"));
+    });
     return () => {
       window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("loginStateChange", () => {
+        setLoggedIn(!!localStorage.getItem("token"));
+      });
     };
   }, []);
+
+  useEffect(() => {
+    setIsDropdownOpen(false); 
+  }, [location]);
 
   return (
     <header
@@ -53,12 +66,36 @@ const Nav = () => {
           </li>
         </ul>
         {loggedIn ? (
-          <div className="flex space-x-4 items-center">
+          <div className="flex space-x-4 items-center relative">
+            <div className="relative">
+              <span
+                className="cursor-pointer text-white hover:text-coral-red transition duration-300"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              >
+                Profile
+              </span>
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-2 z-50">
+                  <Link
+                    to="/profile"
+                    className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                  >
+                    Edit Profile
+                  </Link>
+                  <Link
+                    to="/edit-password"
+                    className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                  >
+                    Edit Password
+                  </Link>
+                </div>
+              )}
+            </div>
             <button
-              className="text-coral-red-500 hover:underline"
+              className="text-white hover:text-coral-red transition duration-300"
               onClick={handleSignOut}
             >
-              Sign out
+              <ExitToAppIcon />
             </button>
           </div>
         ) : (
@@ -72,9 +109,18 @@ const Nav = () => {
           </div>
         )}
         <div className="lg:hidden">
-          <Link to="/login" className="text-white">
-            <img src={hamburger} alt="hamburger icon" className="w-6 h-6" />
-          </Link>
+          {loggedIn ? (
+            <button
+              className="text-white"
+              onClick={handleSignOut}
+            >
+              <img src={hamburger} alt="hamburger icon" className="w-6 h-6" />
+            </button>
+          ) : (
+            <Link to="/login" className="text-white">
+              <img src={hamburger} alt="hamburger icon" className="w-6 h-6" />
+            </Link>
+          )}
         </div>
       </div>
     </header>

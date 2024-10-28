@@ -2,10 +2,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Nav from "./components/client/Nav";
 import {
   Footer,
-  Hero,
-  PopularProducts,
-  Services,
-  SuperQuality,
+  Hero
 } from "./sections/client";
 import Login from "./components/client/Login";
 import Signup from "./components/client/Signup";
@@ -15,17 +12,20 @@ import 'react-toastify/dist/ReactToastify.css';
 import VerifyEmail from './components/client/VerifyEmail';
 import Dashboard from "./components/server/Dashboard"; 
 import Shop from './components/client/Shop';
+import EditProfile from './components/client/EditProfile';
+import Profile from './components/client/Profile';
+import EditPassword from './components/client/EditPassword';
 
 const App = () => {
   return (
     <Router>
       <div>
-        <ToastContainer /> {/* Add ToastContainer */}
+        <ToastContainer /> 
         <Routes>
-          <Route path="/admin/*" element={<Dashboard />} /> {/* Admin routes */}
+          <Route path="/admin/*" element={<Dashboard />} /> 
           <Route path="*" element={
             <>
-              <Nav /> {/* Customer shop navbar */}
+              <Nav /> 
               <main className="relative">
                 <Routes>
                   <Route path="/" element={
@@ -33,16 +33,7 @@ const App = () => {
                       <section className="xl:padding-l wide:padding-r padding-b">
                         <Hero />
                       </section>
-                      <section className="padding mb-10"> 
-                        <PopularProducts />
-                      </section>
-                      <section className="padding mb-10"> 
-                        <SuperQuality />
-                      </section>
-                      <section className="padding mb-10">
-                        <Services />
-                      </section>
-                      <Footer /> {/* Ensure footer is included */}
+                      <Footer /> 
                     </>
                   } />
                   <Route path="/products" element={<Products />} />
@@ -50,6 +41,9 @@ const App = () => {
                   <Route path="/signup" element={<Signup />} />
                   <Route path="/verify-email" element={<VerifyEmail />} /> 
                   <Route path="/shop" element={<Shop />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/edit-profile" element={<EditProfile />} />
+                  <Route path="/edit-password" element={<EditPassword />} />
                 </Routes>
               </main>
             </>

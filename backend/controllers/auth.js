@@ -2,6 +2,7 @@ const User = require('../models/user');
 const cloudinary = require('cloudinary').v2;
 const jwt = require('jsonwebtoken');
 const sendEmail = require('../utils/email');
+const bcrypt = require('bcryptjs');
 
 exports.registerUser = async (req, res) => {
   try {
@@ -90,7 +91,7 @@ exports.verifyEmail = async (req, res) => {
       user.status = 'Verified';
       await user.save();
   
-      return res.status(200).json({ success: true });
+      return res.redirect('http://localhost:5173/login'); 
     } catch (error) {
       console.error('Error in verifyEmail:', error); 
       res.status(500).json({
@@ -143,3 +144,108 @@ exports.verifyEmail = async (req, res) => {
         });
       }
     };
+
+    exports.getUserProfile = async (req, res) => {
+      try {
+        const userId = req.user.id; 
+        const user = await User.findById(userId).select('-password'); 
+    
+        if (!user) {
+          return res.status(404).json({ success: false, message: 'User not found' });
+        }
+    
+        res.json({ success: true, user });
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+      }
+    };
+
+    
+    exports.updateUserProfile = async (req, res) => {
+      try {
+        const userId = req.user.id; 
+        const { email, name, contactNumber, address, avatar } = req.body;
+    
+        console.log('User ID:', userId); 
+        console.log('Request Body:', req.body); 
+    
+        const user = await User.findById(userId);
+    
+        if (!user) {
+          console.error('User not found'); 
+          return res.status(404).json({ success: false, message: 'User not found' });
+        }
+    
+        // Update user details
+        user.email = email;
+        user.name = name;
+        user.contactNumber = contactNumber;
+        user.address = address;
+    
+        // Handle avatar upload if provided
+        if (avatar) {
+          // Delete the old avatar from Cloudinary
+          if (user.avatar.public_id) {
+            await cloudinary.uploader.destroy(user.avatar.public_id);
+          }
+         // Upload the new avatar to Cloudinary
+      const result = await cloudinary.uploader.upload(avatar, {
+        folder: 'avatars',
+        width: 150,
+        crop: 'scale'
+      });
+
+      user.avatar = {
+        public_id: result.public_id,
+        url: result.secure_url
+      };
+    }
+
+    await user.save();
+
+    res.json({ success: true, user });
+  } catch (error) {
+    console.error('Error updating user data:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+exports.updateUserPassword = async (req, res) => {
+  try {
+    const userId = req.user.id; 
+    const { currentPassword, newPassword } = req.body;
+
+    console.log('User ID:', userId); 
+    console.log('Request Body:', req.body); 
+
+    const user = await User.findById(userId).select('+password');
+
+    if (!user) {
+      console.error('User not found'); 
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ success: false, message: 'Current password is incorrect' });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    // End the session if using sessions
+    if (req.session) {
+      req.session.destroy((err) => {
+        if (err) {
+          console.error('Error ending session:', err);
+        }
+      });
+    }
+
+    res.json({ success: true, message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Error updating password:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};

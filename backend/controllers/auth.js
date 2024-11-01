@@ -3,6 +3,9 @@ const cloudinary = require('cloudinary').v2;
 const jwt = require('jsonwebtoken');
 const sendEmail = require('../utils/email');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 
 exports.registerUser = async (req, res) => {
   try {
@@ -246,6 +249,100 @@ exports.updateUserPassword = async (req, res) => {
     res.json({ success: true, message: 'Password updated successfully' });
   } catch (error) {
     console.error('Error updating password:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const now = Date.now();
+    if (user.lastPasswordResetRequest && now - user.lastPasswordResetRequest < 60 * 1000) {
+      return res.status(429).json({ success: false, message: 'Please wait 60 seconds before requesting another reset email.' });
+    }
+
+    const resetToken = crypto.randomBytes(20).toString('hex');
+    const resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    const resetPasswordExpire = now + 10 * 60 * 1000; // 10 minutes
+
+    user.resetPasswordToken = resetPasswordToken;
+    user.resetPasswordExpire = resetPasswordExpire;
+    user.lastPasswordResetRequest = now;
+    await user.save();
+
+    const message = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Password Reset Request</title>
+        <style>
+          @import url('https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
+        </style>
+      </head>
+      <body class="bg-gray-100">
+        <div class="max-w-lg mx-auto mt-10 bg-white p-6 rounded-lg shadow-lg">
+          <h2 class="text-2xl font-bold text-center mb-4">Password Reset Request</h2>
+          <p class="text-gray-700 mb-4">
+            You are receiving this email because you recently sent a request to reset your password. If this isn't you, please disregard it. The token expires in 10 minutes (don't share it with anyone else).
+          </p>
+          <div class="text-center">
+            <span class="text-xl font-bold text-red-500">${resetToken}</span>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    await sendEmail({
+      email: user.email,
+      subject: 'Password Reset Request',
+      html: message,
+    });
+
+    res.status(200).json({ success: true, message: 'Email sent' });
+  } catch (error) {
+    console.error('Error sending email:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  const { token, newPassword } = req.body;
+
+  try {
+    const resetPasswordToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const user = await User.findOne({
+      resetPasswordToken,
+      resetPasswordExpire: { $gt: Date.now() }
+    }).select('+password');
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'Invalid token' });
+    }
+
+    const isSamePassword = await user.comparePassword(newPassword);
+    if (isSamePassword) {
+      return res.status(400).json({ success: false, message: 'Cannot use current password' });
+    }
+
+    user.password = newPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'Password reset successfully' });
+  } catch (error) {
+    console.error('Error resetting password:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };

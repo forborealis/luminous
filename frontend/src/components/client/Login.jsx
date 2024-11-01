@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { toast } from 'react-toastify'; 
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify'; // Import toast
+import 'react-toastify/dist/ReactToastify.css'; // Import toast styles
 import { authenticate, getToken } from '../../utils/helpers';
 
 const Login = () => {
@@ -41,6 +41,7 @@ const Login = () => {
   useEffect(() => {
     if (location.state?.unauthorized) {
       toast.error('Unauthorized access.');
+      // Clear the state to prevent the toast from showing again
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location.state, navigate, location.pathname]);
@@ -86,6 +87,11 @@ const Login = () => {
           Don't have an account?{' '}
           <Link to="/signup" className="text-coral-red hover:underline">
             Sign Up
+          </Link>
+        </p>
+        <p className="mt-2 text-center font-montserrat">
+          <Link to="/forgot-password" className="text-coral-red hover:underline">
+            Forgot Password?
           </Link>
         </p>
       </div>

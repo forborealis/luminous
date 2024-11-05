@@ -6,6 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 
 const EditProfile = () => {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [contactNumber, setContactNumber] = useState('');
@@ -32,8 +33,9 @@ const EditProfile = () => {
         const response = await axios.get(`${apiUrl}/user`, { headers });
 
         if (response.data.success) {
-          const { email, name, contactNumber, address, avatar } = response.data.user;
+          const { username, email, name, contactNumber, address, avatar } = response.data.user;
           console.log('Fetched user data:', response.data.user); 
+          setUsername(username);
           setEmail(email);
           setName(name);
           setContactNumber(contactNumber);
@@ -57,6 +59,7 @@ const EditProfile = () => {
     const updatedAvatar = avatarEditorRef.current.getCroppedImage();
 
     const formData = {
+      username,
       email,
       name,
       contactNumber,
@@ -93,6 +96,19 @@ const EditProfile = () => {
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
         <h2 className="text-2xl font-bold mb-6 font-palanquin">Edit Profile</h2>
         <form onSubmit={handleSubmit}>
+        <div className="mb-4">
+            <label className="block text-gray-700 mb-2 font-montserrat" htmlFor="email">
+              Username
+            </label>
+            <input
+              type="username"
+              id="username"
+              className="w-full px-3 py-2 border rounded font-montserrat"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </div>
           <div className="mb-4">
             <label className="block text-gray-700 mb-2 font-montserrat" htmlFor="email">
               Email

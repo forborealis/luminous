@@ -45,7 +45,7 @@ const Profile = () => {
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 font-montserrat">
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 font-palanquin">Profile</h2>
+      <h2 className="text-2xl font-bold mb-6 font-palanquin text-center">@{user.username}</h2>
         {user.avatar && (
           <div className="mb-4 flex justify-center">
             <img src={user.avatar.url} alt="Avatar" className="w-24 h-24 rounded-full" />

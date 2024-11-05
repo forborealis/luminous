@@ -7,6 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const Signup = () => {
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [name, setName] = useState('');
   const [contactNumber, setContactNumber] = useState('');
   const [address, setAddress] = useState('');
@@ -22,6 +23,7 @@ const Signup = () => {
 
     const formData = {
       email,
+      username,
       name,
       contactNumber,
       address,
@@ -58,6 +60,19 @@ const Signup = () => {
               className="w-full px-3 py-2 border rounded font-montserrat"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-2 font-montserrat" htmlFor="username">
+              Username
+            </label>
+            <input
+              type="text"
+              id="username"
+              className="w-full px-3 py-2 border rounded font-montserrat"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
             />
           </div>

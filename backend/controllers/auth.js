@@ -9,7 +9,7 @@ const path = require('path');
 
 exports.registerUser = async (req, res) => {
   try {
-    const { name, email, contactNumber, address, password, avatar } = req.body;
+    const { name, username, email, contactNumber, address, password, avatar } = req.body;
 
     // Check if avatar is present
     if (!avatar) {
@@ -23,22 +23,23 @@ exports.registerUser = async (req, res) => {
     const result = await cloudinary.uploader.upload(avatar, {
       folder: 'avatars',
       width: 150,
-      crop: 'scale'
+      crop: 'scale',
     });
 
     console.log('Cloudinary upload result:', result);
 
     const user = await User.create({
       name,
+      username,
       email,
       contactNumber,
       address,
       password,
       avatar: {
         public_id: result.public_id,
-        url: result.secure_url
+        url: result.secure_url,
       },
-      status: 'Pending' 
+      status: 'Pending',
     });
 
     // Generate verification token
@@ -67,7 +68,7 @@ exports.registerUser = async (req, res) => {
       message: 'User registered successfully. Please check your email to verify your account.',
     });
   } catch (error) {
-    console.error('Error in registerUser:', error); 
+    console.error('Error in registerUser:', error);
     res.status(500).json({
       success: false,
       message: 'Server Error',
@@ -106,47 +107,47 @@ exports.verifyEmail = async (req, res) => {
 
   exports.loginUser = async (req, res) => {
     try {
-      const { email, password } = req.body;
+      const { username, password } = req.body;
   
-      // Check if email and password are provided
-      if (!email || !password) {
-        return res.status(400).json({ success: false, message: 'Please provide email and password' });
+      // Check if username and password are provided
+      if (!username || !password) {
+        return res.status(400).json({ success: false, message: 'Please provide username and password' });
       }
   
-      // Find user by email
-      const user = await User.findOne({ email }).select('+password');
+      // Find user by username
+      const user = await User.findOne({ username }).select('+password');
   
       if (!user) {
-        return res.status(401).json({ success: false, message: 'Invalid email or password' });
+        return res.status(401).json({ success: false, message: 'Invalid username or password' });
       }
   
       // Check if user is verified
       if (user.status !== 'Verified') {
         return res.status(401).json({ success: false, message: 'Your account is not verified' });
       }
-
+  
       // Check if password matches
-    const isPasswordMatched = await user.comparePassword(password);
-
-    if (!isPasswordMatched) {
-      return res.status(401).json({ success: false, message: 'Invalid email or password' });
-    }
-
-        // Generate JWT token
-        const token = user.getJwtToken();
-
-        res.status(200).json({
-          success: true,
-          token,
-        });
-      } catch (error) {
-        console.error('Error in loginUser:', error);
-        res.status(500).json({
-          success: false,
-          message: 'Server Error',
-        });
+      const isPasswordMatched = await user.comparePassword(password);
+  
+      if (!isPasswordMatched) {
+        return res.status(401).json({ success: false, message: 'Invalid username or password' });
       }
-    };
+  
+      // Generate JWT token
+      const token = user.getJwtToken();
+  
+      res.status(200).json({
+        success: true,
+        token,
+      });
+    } catch (error) {
+      console.error('Error in loginUser:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Server Error',
+      });
+    }
+  };
 
     exports.getUserProfile = async (req, res) => {
       try {
@@ -168,7 +169,7 @@ exports.verifyEmail = async (req, res) => {
     exports.updateUserProfile = async (req, res) => {
       try {
         const userId = req.user.id; 
-        const { email, name, contactNumber, address, avatar } = req.body;
+        const { username, email, name, contactNumber, address, avatar } = req.body;
     
         console.log('User ID:', userId); 
         console.log('Request Body:', req.body); 
@@ -181,6 +182,7 @@ exports.verifyEmail = async (req, res) => {
         }
     
         // Update user details
+        user.username = username;
         user.email = email;
         user.name = name;
         user.contactNumber = contactNumber;

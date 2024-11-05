@@ -2,11 +2,10 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 
-// Function to authenticate user and store token
-export const authenticate = async (email, password, navigate, setError) => {
+export const authenticate = async (username, password, navigate, setError) => {
   try {
     const apiUrl = import.meta.env.VITE_API_URL;
-    const response = await axios.post(`${apiUrl}/login`, { email, password }, {
+    const response = await axios.post(`${apiUrl}/login`, { username, password }, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -16,14 +15,14 @@ export const authenticate = async (email, password, navigate, setError) => {
     if (response.data.success) {
       localStorage.setItem('token', response.data.token);
       toast.success('Login successful!');
-      window.dispatchEvent(new Event('loginStateChange')); // Dispatch custom event
+      window.dispatchEvent(new Event('loginStateChange')); 
       navigate('/shop');
     } else {
       setError(response.data.message);
     }
   } catch (error) {
     console.error('Error logging in:', error);
-    setError('Invalid email or password');
+    setError('Invalid username or password');
   }
 };
 
@@ -40,17 +39,15 @@ export const logout = (next) => {
   if (typeof window !== 'undefined') {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.dispatchEvent(new Event('loginStateChange')); // Dispatch custom event
+    window.dispatchEvent(new Event('loginStateChange')); 
   }
   next();
 };
 
-// Function to display error messages
 export const errMsg = (message = '') => toast.error(message, {
   position: 'bottom-right'
 });
 
-// Function to display success messages
 export const successMsg = (message = '') => toast.success(message, {
   position: 'bottom-right'
 });

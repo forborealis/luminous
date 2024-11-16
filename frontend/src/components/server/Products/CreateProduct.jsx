@@ -1,156 +1,214 @@
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { createProduct } from '/redux/actions/productActions';
+// CreateProduct.jsx
+
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { TextField, Button, Box, Typography, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
+// Validation schema with Yup
+const schema = yup.object().shape({
+  name: yup.string().required('Product name is required'),
+  description: yup.string().required('Description is required'),
+  price: yup.number().required('Price is required').positive('Price must be a positive number'),
+  category: yup.string().required('Category is required'),
+  stock: yup.number().required('Stock is required').integer('Stock must be an integer').min(0, 'Stock cannot be negative'),
+});
+
 const CreateProduct = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  
-  const [formData, setFormData] = useState({ name: '', description: '', price: '', category: 'Lip' });
+  const [categoryOptions, setCategoryOptions] = useState([]);
   const [images, setImages] = useState([]);
-  const [formErrors, setFormErrors] = useState({}); // Track form validation errors
-  const [imageError, setImageError] = useState(''); // Track image validation error
+  const [imagePreviews, setImagePreviews] = useState([]);
+  const [imageLimitExceeded, setImageLimitExceeded] = useState(false); // New state
 
-  const validateForm = () => {
-    const errors = {};
-    if (!formData.name) errors.name = 'Product name is required';
-    if (!formData.description) errors.description = 'Description is required';
-    if (!formData.price) errors.price = 'Price is required';
-    if (images.length === 0) errors.images = 'You must upload at least one image';
-    return errors;
-  };
+  // React Hook Form setup
+  const { handleSubmit, control, reset, formState: { errors } } = useForm({
+    resolver: yupResolver(schema),
+  });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const errors = validateForm();
-    
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
-      return; // Stop form submission if there are validation errors
-    }
+  useEffect(() => {
+    // Fetch categories on mount
+    const fetchInitialData = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/v1/products');
+        if (response.data.categoryOptions) {
+          setCategoryOptions(response.data.categoryOptions);
+        }
+      } catch (error) {
+        console.error('Failed to fetch initial data:', error);
+      }
+    };
+    fetchInitialData();
+  }, []);
 
-    const productData = new FormData();
-    productData.append('name', formData.name);
-    productData.append('description', formData.description);
-    productData.append('price', formData.price);
-    productData.append('category', formData.category);
-    images.forEach(image => productData.append('images', image));
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
 
-    dispatch(createProduct(productData)).then(() => navigate('/admin/products'));
-  };
-
-  const handleImageChange = (e) => {
-    const selectedFiles = Array.from(e.target.files);
-    if (selectedFiles.length > 4) {
-      setImageError('You can only upload a total of 4 images');
-      setImages([]); // Reset images
+    if (files.length > 4) {
+      setImageLimitExceeded(true); // Set state to true if more than 4 images are selected
     } else {
-      setImageError(''); // Clear error if less than 4 images
-      setImages(selectedFiles);
+      setImageLimitExceeded(false); // Reset state if 4 or fewer images are selected
+      setImages(files);
+      // Create image preview URLs
+      const previews = files.map((file) => URL.createObjectURL(file));
+      setImagePreviews(previews);
     }
   };
 
-  const handleBack = () => {
-    navigate('/admin/products'); // Navigate back to the products page
+  const onSubmit = async (data) => {
+    const formData = new FormData();
+
+    // Append form data
+    Object.keys(data).forEach((key) => formData.append(key, data[key]));
+    images.forEach((image) => formData.append('images', image));
+
+    try {
+      await axios.post('http://localhost:5000/api/v1/products', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      alert('Product created successfully!');
+      reset(); // Reset form fields
+      setImagePreviews([]);
+      setImages([]);
+      navigate('/admin/products'); // Redirect to products page
+    } catch (error) {
+      console.error('Error creating product:', error);
+      alert('Failed to create product.');
+    }
   };
 
   return (
-    <div className="container mx-auto p-8">
-      <h2 className="text-2xl font-bold mb-6">Create New Product</h2>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Product Name */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Product Name</label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            className={`mt-1 block w-full px-4 py-2 border ${formErrors.name ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-          />
-          {formErrors.name && <p className="text-red-500 text-sm mt-1">{formErrors.name}</p>}
-        </div>
+    <Box
+      component="form"
+      onSubmit={handleSubmit(onSubmit)}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 2,
+        maxWidth: 600,
+        margin: 'auto',
+        padding: 4,
+        borderRadius: 2,
+        boxShadow: 3,
+      }}
+    >
+      {/* Back Button */}
+      <Button variant="outlined" onClick={() => navigate('/admin/products')} sx={{ alignSelf: 'flex-start', mb: 2 }}>
+        Back
+      </Button>
 
-        {/* Product Description */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Description</label>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            className={`mt-1 block w-full px-4 py-2 border ${formErrors.description ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-          />
-          {formErrors.description && <p className="text-red-500 text-sm mt-1">{formErrors.description}</p>}
-        </div>
+      <Typography variant="h4" gutterBottom>Create New Product</Typography>
 
-        {/* Product Price */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Price</label>
-          <input
+      {/* Product Name */}
+      <Controller
+        name="name"
+        control={control}
+        defaultValue=""
+        render={({ field }) => (
+          <TextField
+            {...field}
+            label="Product Name"
+            fullWidth
+            error={!!errors.name}
+            helperText={errors.name?.message}
+          />
+        )}
+      />
+
+      {/* Description */}
+      <Controller
+        name="description"
+        control={control}
+        defaultValue=""
+        render={({ field }) => (
+          <TextField
+            {...field}
+            label="Description"
+            fullWidth
+            error={!!errors.description}
+            helperText={errors.description?.message}
+          />
+        )}
+      />
+
+      {/* Price */}
+      <Controller
+        name="price"
+        control={control}
+        defaultValue=""
+        render={({ field }) => (
+          <TextField
+            {...field}
+            label="Price"
             type="number"
-            name="price"
-            value={formData.price}
-            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-            className={`mt-1 block w-full px-4 py-2 border ${formErrors.price ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
+            fullWidth
+            error={!!errors.price}
+            helperText={errors.price?.message}
           />
-          {formErrors.price && <p className="text-red-500 text-sm mt-1">{formErrors.price}</p>}
-        </div>
+        )}
+      />
 
-        {/* Product Category */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Category</label>
-          <select
-            name="category"
-            value={formData.category}
-            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          >
-            <option value="Lip">Lip</option>
-            <option value="Blush">Blush</option>
-            <option value="Foundation">Foundation</option>
-            <option value="Eyeshadow">Eyeshadow</option>
-            <option value="Eyebrow">Eyebrow</option>
-            <option value="Powder">Powder</option>
-          </select>
-        </div>
+      {/* Category */}
+      <Controller
+        name="category"
+        control={control}
+        defaultValue=""
+        render={({ field }) => (
+          <FormControl fullWidth error={!!errors.category}>
+            <InputLabel>Category</InputLabel>
+            <Select {...field} label="Category">
+              {categoryOptions.map((option) => (
+                <MenuItem key={option} value={option}>{option}</MenuItem>
+              ))}
+            </Select>
+            {errors.category && <Typography color="error">{errors.category.message}</Typography>}
+          </FormControl>
+        )}
+      />
 
-        {/* Product Images */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Upload Images (Max 4)</label>
-          <input
-            type="file"
-            name="images"
-            multiple
-            accept="image/*"
-            onChange={handleImageChange}
-            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+      {/* Stock */}
+      <Controller
+        name="stock"
+        control={control}
+        defaultValue=""
+        render={({ field }) => (
+          <TextField
+            {...field}
+            label="Stock"
+            type="number"
+            fullWidth
+            error={!!errors.stock}
+            helperText={errors.stock?.message}
           />
-          {imageError && <p className="text-red-500 text-sm mt-1">{imageError}</p>}
-          {formErrors.images && <p className="text-red-500 text-sm mt-1">{formErrors.images}</p>}
-        </div>
+        )}
+      />
 
-        {/* Buttons */}
-        <div className="flex space-x-4">
-          {/* Submit Button */}
-          <button
-            type="submit"
-            className="w-full px-4 py-2 bg-indigo-600 text-white font-bold rounded-md hover:bg-indigo-700 transition duration-200"
-          >
-            Create Product
-          </button>
+      {/* Image Upload */}
+      <Button
+        variant="contained"
+        component="label"
+        fullWidth
+        color={imageLimitExceeded ? "error" : "primary"} // Change color based on image limit
+      >
+        {imageLimitExceeded ? "Limit Exceeded (Max 4 Images)" : "Choose Files"}
+        <input type="file" multiple accept="image/*" onChange={handleImageUpload} hidden />
+      </Button>
 
-          {/* Back Button */}
-          <button
-            type="button"
-            onClick={handleBack}
-            className="w-full px-4 py-2 bg-gray-500 text-white font-bold rounded-md hover:bg-gray-600 transition duration-200"
-          >
-            Back to Products
-          </button>
-        </div>
-      </form>
-    </div>
+      {/* Image Previews */}
+      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: 2 }}>
+        {imagePreviews.map((src, index) => (
+          <img key={index} src={src} alt={`Preview ${index + 1}`} style={{ width: 100, height: 100, borderRadius: 4 }} />
+        ))}
+      </Box>
+
+      {/* Submit Button */}
+      <Button type="submit" variant="contained" color="primary" fullWidth>Create Product</Button>
+    </Box>
   );
 };
 

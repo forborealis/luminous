@@ -1,228 +1,251 @@
+// UpdateProduct.jsx
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { TextField, Button, Box, Typography, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import { useNavigate, useParams } from 'react-router-dom';
+
+// Validation schema with Yup
+const schema = yup.object().shape({
+  name: yup.string().required('Product name is required'),
+  description: yup.string().required('Description is required'),
+  price: yup.number().required('Price is required').positive('Price must be a positive number'),
+  category: yup.string().required('Category is required'),
+  stock: yup.number().required('Stock is required').integer('Stock must be an integer').min(0, 'Stock cannot be negative'),
+});
 
 const UpdateProduct = () => {
-  const { id } = useParams(); // Get the product ID from URL
+  const { id } = useParams();
   const navigate = useNavigate();
-  
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    category: 'Lip', // Default category
-  });
-  const [images, setImages] = useState([]); // New images to be uploaded
-  const [existingImages, setExistingImages] = useState([]); // Existing images from DB
-  const [previewImages, setPreviewImages] = useState([]); // Previews for new uploads
-  const [errorMessage, setErrorMessage] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [categoryOptions, setCategoryOptions] = useState([]);
+  const [currentImages, setCurrentImages] = useState([]);
+  const [images, setImages] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
+  const [imageLimitExceeded, setImageLimitExceeded] = useState(false);
 
-  // Fetch existing product details to update
+  // React Hook Form setup with Yup validation
+  const { handleSubmit, control, setValue, reset, formState: { errors } } = useForm({
+    resolver: yupResolver(schema),
+  });
+
   useEffect(() => {
-    const fetchProductDetails = async () => {
+    // Fetch product and category options on mount
+    const fetchProduct = async () => {
       try {
         const response = await axios.get(`http://localhost:5000/api/v1/products/${id}`);
         const product = response.data.product;
 
-        setFormData({
-          name: product.name,
-          description: product.description,
-          price: product.price,
-          category: product.category,
-        });
-
-        setExistingImages(product.images); // Existing images from database
+        // Set initial form values
+        setValue('name', product.name);
+        setValue('description', product.description);
+        setValue('price', product.price);
+        setValue('category', product.category);
+        setValue('stock', product.stock);
+        setCurrentImages(product.images || []); // Load existing images
       } catch (error) {
-        console.error('Error fetching product details:', error);
+        console.error('Error fetching product:', error);
+        alert('Failed to fetch product data.');
       }
     };
 
-    fetchProductDetails();
-  }, [id]);
+    const fetchCategoryOptions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/v1/products');
+        setCategoryOptions(response.data.categoryOptions || []);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
 
-  const handleBack = () => {
-    navigate('/admin/products'); // Redirect to the products page
-  };
+    fetchProduct();
+    fetchCategoryOptions();
+  }, [id, setValue]);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleImageChange = (e) => {
+  const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
 
-    // Check if total number of images (existing + new) exceeds 4
-    if (files.length + existingImages.length > 4) {
-      setErrorMessage('You can only upload a total of 4 images.');
-      setImages([]);
-      setPreviewImages([]);
-      return;
+    if (files.length > 4) {
+      setImageLimitExceeded(true);
+    } else {
+      setImageLimitExceeded(false);
+      setImages(files);
+      const previews = files.map((file) => URL.createObjectURL(file));
+      setImagePreviews(previews);
     }
-
-    setErrorMessage('');
-    setImages(files);
-
-    // Preview the new images
-    const previewUrls = files.map(file => URL.createObjectURL(file));
-    setPreviewImages(previewUrls);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    // Check if total images exceed 4
-    if (images.length + existingImages.length > 4) {
-      setErrorMessage('You can only upload a total of 4 images.');
+  const onSubmit = async (data) => {
+    if (imageLimitExceeded) {
+      alert('Failed to update product. You cannot upload more than 4 images.');
       return;
     }
 
-    setIsSubmitting(true);
+    const formData = new FormData();
 
-    const productData = new FormData();
-    productData.append('name', formData.name);
-    productData.append('description', formData.description);
-    productData.append('price', formData.price);
-    productData.append('category', formData.category);
-
-    // Append new images for upload
-    images.forEach(image => productData.append('images', image));
+    // Append text fields to formData
+    Object.keys(data).forEach((key) => formData.append(key, data[key]));
+    images.forEach((image) => formData.append('images', image));
 
     try {
-      await axios.put(`http://localhost:5000/api/v1/products/${id}`, productData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      await axios.put(`http://localhost:5000/api/v1/products/${id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-      alert('Product updated successfully');
-      navigate('/admin/products'); // Redirect to product list after successful update
+      alert('Product updated successfully!');
+      navigate('/admin/products');
     } catch (error) {
       console.error('Error updating product:', error);
-      alert('Failed to update product');
-    } finally {
-      setIsSubmitting(false);
+      alert('Failed to update product.');
     }
   };
 
   return (
-    <div className="container mx-auto p-8">
-      <h2 className="text-2xl font-bold mb-6">Update Product</h2>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Product Name */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Product Name</label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            required
+    <Box
+      component="form"
+      onSubmit={handleSubmit(onSubmit)}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 2,
+        maxWidth: 800,
+        margin: 'auto',
+        padding: 4,
+        borderRadius: 2,
+        boxShadow: 3,
+      }}
+    >
+      {/* Back Button */}
+      <Button variant="outlined" onClick={() => navigate('/admin/products')} sx={{ alignSelf: 'flex-start', mb: 2 }}>
+        Back
+      </Button>
+
+      <Typography variant="h4">Update Product</Typography>
+
+      {/* Product Name */}
+      <Controller
+        name="name"
+        control={control}
+        defaultValue=""
+        render={({ field }) => (
+          <TextField
+            {...field}
+            label="Product Name"
+            fullWidth
+            error={!!errors.name}
+            helperText={errors.name?.message}
           />
-        </div>
-
-        {/* Product Description */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Description</label>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            required
-          />
-        </div>
-
-        {/* Product Price */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Price</label>
-          <input
-            type="number"
-            name="price"
-            value={formData.price}
-            onChange={handleInputChange}
-            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            required
-          />
-        </div>
-
-        {/* Product Category */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Category</label>
-          <select
-            name="category"
-            value={formData.category}
-            onChange={handleInputChange}
-            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            required
-          >
-            <option value="Lip">Lip</option>
-            <option value="Blush">Blush</option>
-            <option value="Foundation">Foundation</option>
-            <option value="Eyeshadow">Eyeshadow</option>
-            <option value="Eyebrow">Eyebrow</option>
-            <option value="Powder">Powder</option>
-          </select>
-        </div>
-
-        {/* Product Images */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Upload New Images (Max 4)</label>
-          <input
-            type="file"
-            name="images"
-            multiple
-            accept="image/*"
-            onChange={handleImageChange}
-            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          />
-        </div>
-
-        {/* Existing Images */}
-        <div>
-          <h4 className="text-md font-semibold mb-2">Existing Images</h4>
-          <div className="flex gap-4">
-            {existingImages.map((image, index) => (
-              <img key={index} src={image} alt="Product" className="w-24 h-24 rounded-md" />
-            ))}
-          </div>
-        </div>
-
-        {/* Preview New Images */}
-        {previewImages.length > 0 && (
-          <div>
-            <h4 className="text-md font-semibold mb-2">Preview New Images</h4>
-            <div className="flex gap-4">
-              {previewImages.map((image, index) => (
-                <img key={index} src={image} alt="Preview" className="w-24 h-24 rounded-md" />
-              ))}
-            </div>
-          </div>
         )}
+      />
 
-        {errorMessage && <div className="text-red-600">{errorMessage}</div>}
+      {/* Description */}
+      <Controller
+        name="description"
+        control={control}
+        defaultValue=""
+        render={({ field }) => (
+          <TextField
+            {...field}
+            label="Description"
+            fullWidth
+            error={!!errors.description}
+            helperText={errors.description?.message}
+          />
+        )}
+      />
 
-        {/* Action Buttons */}
-        <div className="flex space-x-4">
-          <button
-            type="submit"
-            className="px-4 py-2 bg-indigo-600 text-white font-bold rounded-md hover:bg-indigo-700 transition duration-200"
-            disabled={isSubmitting}
-          >
-            Update Product
-          </button>
+      {/* Price */}
+      <Controller
+        name="price"
+        control={control}
+        defaultValue=""
+        render={({ field }) => (
+          <TextField
+            {...field}
+            label="Price"
+            type="number"
+            fullWidth
+            error={!!errors.price}
+            helperText={errors.price?.message}
+          />
+        )}
+      />
 
-          <button
-            type="button"
-            onClick={handleBack}
-            className="px-4 py-2 bg-gray-500 text-white font-bold rounded-md hover:bg-gray-600 transition duration-200"
-          >
-            Back to Products
-          </button>
-        </div>
-      </form>
-    </div>
+      {/* Category */}
+      <Controller
+        name="category"
+        control={control}
+        defaultValue=""
+        render={({ field }) => (
+          <FormControl fullWidth error={!!errors.category}>
+            <InputLabel>Category</InputLabel>
+            <Select {...field} label="Category">
+              {categoryOptions.map((option) => (
+                <MenuItem key={option} value={option}>{option}</MenuItem>
+              ))}
+            </Select>
+            {errors.category && <Typography color="error">{errors.category.message}</Typography>}
+          </FormControl>
+        )}
+      />
+
+      {/* Stock */}
+      <Controller
+        name="stock"
+        control={control}
+        defaultValue=""
+        render={({ field }) => (
+          <TextField
+            {...field}
+            label="Stock"
+            type="number"
+            fullWidth
+            error={!!errors.stock}
+            helperText={errors.stock?.message}
+          />
+        )}
+      />
+
+      {/* Current Images */}
+      <Typography variant="subtitle1" sx={{ mt: 2 }}>Current Images</Typography>
+      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: 2 }}>
+        {currentImages.length > 0 ? (
+          currentImages.map((src, index) => (
+            <img key={index} src={src} alt={`Current ${index + 1}`} style={{ width: 100, height: 100, borderRadius: 4 }} />
+          ))
+        ) : (
+          <Typography>No current images available.</Typography>
+        )}
+      </Box>
+
+      {/* Image Upload */}
+      <Button
+        variant="contained"
+        component="label"
+        fullWidth
+        color={imageLimitExceeded ? "error" : "primary"}
+        sx={{ mt: 2 }}
+      >
+        {imageLimitExceeded ? "Limit Exceeded (Max 4 Images)" : "Choose New Files"}
+        <input type="file" multiple accept="image/*" onChange={handleImageUpload} hidden />
+      </Button>
+
+      {/* New Image Previews */}
+      <Typography variant="subtitle1" sx={{ mt: 2 }}>New Images (if selected)</Typography>
+      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: 2 }}>
+        {imagePreviews.map((src, index) => (
+          <img key={index} src={src} alt={`Preview ${index + 1}`} style={{ width: 100, height: 100, borderRadius: 4 }} />
+        ))}
+      </Box>
+
+      {/* Submit Button */}
+      <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
+        Update Product
+      </Button>
+    </Box>
   );
 };
 

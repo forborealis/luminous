@@ -1,25 +1,20 @@
+// routes/products.js
+
 const express = require('express');
 const router = express.Router();
-const {
-  createProduct,
-  getProducts,
-  getProductById,
-  updateProduct,
-  softDeleteProduct,
-  restoreProduct,
-  permanentlyDeleteProduct,
-  getDeletedProducts // Add the function here
-} = require('../controllers/ProductController');
+const productController = require('../controllers/ProductController');
+const upload = require('../config/multer'); // Import the multer configuration
 
-const multer = require('../config/multer'); // Import multer configuration
+// Apply upload middleware for handling multiple images (up to 4)
+router.post('/products', upload.array('images', 4), productController.createProduct);
 
-router.get('/products/deleted', getDeletedProducts); // Route to fetch deleted products
-router.post('/products', multer.array('images', 4), createProduct);
-router.put('/products/:id', multer.array('images', 4), updateProduct);
-router.get('/products/:id', getProductById);
-router.get('/products', getProducts);
-router.delete('/products/:id', softDeleteProduct); // Soft delete route
-router.put('/products/restore/:id', restoreProduct); // Restore product route
-router.delete('/products/permanent/:id', permanentlyDeleteProduct); // Permanent delete route
+// Order matters here. Place `/products/deleted` before `/products/:id`
+router.get('/products/deleted', productController.getDeletedProducts);
+router.get('/products', productController.getAllProducts);
+router.put('/products/:id', upload.array('images', 4), productController.updateProduct);
+router.get('/products/:id', productController.getProductById);  // This should be last among these routes
+router.put('/products/:id/soft-delete', productController.softDeleteProduct);
+router.put('/products/:id/restore', productController.restoreProduct);
+router.delete('/products/:id', productController.permanentDeleteProduct);
 
 module.exports = router;

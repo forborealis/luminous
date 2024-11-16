@@ -6,7 +6,7 @@ import Sidebar from './Sidebar';
 import MainContent from './MainContent';
 import Product from './Products/Product';
 import CreateProduct from './Products/CreateProduct'; // Create product page
-import UpdateProduct from './Products/UpdateProduct'; // Update product page
+import UpdateProduct from './Products/UpdateProduct';
 import ProductDelete from './Products/ProductDelete';
 
 
@@ -20,8 +20,8 @@ const Dashboard = () => {
           <Route path="/dashboard" element={<MainContent />} />
           <Route path="/products" element={<Product />} /> {/* Product DataTable Route */}
           <Route path="/products/create" element={<CreateProduct />} />
-          <Route path="/products/edit/:id" element={<UpdateProduct />} />
-          <Route path="/products/delete" element={<ProductDelete />} />
+          <Route path="/products/update/:id" element={<UpdateProduct />} />
+          <Route path="/products/trash" element={<ProductDelete />} />
         </Routes>
       </Box>
     </Box>

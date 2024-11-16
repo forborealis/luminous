@@ -1,150 +1,170 @@
 import React, { useEffect, useState } from 'react';
-import DataTable from 'react-data-table-component';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchProducts, deleteProduct } from '/redux/actions/productActions'; // Adjust path
+import MUIDataTable from 'mui-datatables';
+import axios from 'axios';
+import { Button, Collapse, Typography, Box, IconButton } from '@mui/material';
+import { ArrowBack, ArrowForward } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
-const Product = () => {
-  const dispatch = useDispatch();
+const ProductTable = () => {
+  const [products, setProducts] = useState([]);
+  const [expandedRows, setExpandedRows] = useState({});
+  const [selectedProductIds, setSelectedProductIds] = useState([]);
+  const [imageIndexMap, setImageIndexMap] = useState({}); // Store current image index per product
   const navigate = useNavigate();
-  
-  const { products, loading } = useSelector((state) => state.products);
-  const [currentImageIndex, setCurrentImageIndex] = useState({});
 
   useEffect(() => {
-    dispatch(fetchProducts());
-  }, [dispatch]);
+    fetchProducts();
+  }, []);
 
-  // Initialize image index tracking for each product
-  useEffect(() => {
-    if (products.length > 0) {
-      const initialIndexes = {};
-      products.forEach((product) => {
-        initialIndexes[product._id] = 0;
-      });
-      setCurrentImageIndex(initialIndexes);
-    }
-  }, [products]);
-
-  const handleCreateProduct = () => {
-    navigate('/admin/products/create');
-  };
-
-  const handleEditProduct = (productId) => {
-    navigate(`/admin/products/edit/${productId}`);
-  };
-
-  const handleDeleteProduct = (id) => {
-    if (window.confirm("Are you sure you want to move this product to trash?")) {
-      dispatch(deleteProduct(id));
+  const fetchProducts = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/v1/products');
+      setProducts(response.data.products);
+      setSelectedProductIds([]);
+      setImageIndexMap({}); // Reset image indices when fetching new data
+    } catch (error) {
+      console.error("Error fetching products:", error);
     }
   };
 
-  const handleViewTrash = () => {
-    navigate('/admin/products/delete');
+  const handleUpdate = () => {
+    if (selectedProductIds.length > 1) {
+      alert("Error: Cannot update multiple products.");
+    } else if (selectedProductIds.length === 1) {
+      navigate(`/admin/products/update/${selectedProductIds[0]}`);
+    } else {
+      alert('Please select a product to update.');
+    }
   };
 
-  const handleNextImage = (productId, images) => {
-    setCurrentImageIndex((prevIndexes) => ({
-      ...prevIndexes,
-      [productId]: (prevIndexes[productId] + 1) % images.length,
-    }));
+  const handleDelete = async () => {
+    try {
+      await Promise.all(
+        selectedProductIds.map(id => axios.put(`http://localhost:5000/api/v1/products/${id}/soft-delete`))
+      );
+      alert('Selected products moved to trash.');
+      fetchProducts();
+    } catch (error) {
+      console.error("Error soft deleting products:", error);
+      alert('Failed to delete selected products.');
+    }
   };
 
-  const handlePreviousImage = (productId, images) => {
-    setCurrentImageIndex((prevIndexes) => ({
-      ...prevIndexes,
-      [productId]: (prevIndexes[productId] - 1 + images.length) % images.length,
-    }));
+  const handleImageNavigation = (productId, direction) => {
+    setImageIndexMap(prev => {
+      const currentIndex = prev[productId] || 0;
+      const newIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
+      return { ...prev, [productId]: newIndex };
+    });
   };
 
   const columns = [
+    { name: 'name', label: 'Product Name' },
+    { name: 'description', label: 'Description' },
+    { name: 'price', label: 'Price' },
+    { name: 'category', label: 'Category' },
+    { name: 'stock', label: 'Stock' },
     {
-      name: 'Images', 
-      selector: row => (
-        <div className="flex items-center space-x-2">
-          {/* Disable previous button if only 1 image */}
-          <button 
-            onClick={() => handlePreviousImage(row._id, row.images)} 
-            disabled={row.images.length <= 1}
-            className={`text-xl ${row.images.length <= 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            &#9664; {/* Left arrow */}
-          </button>
-          <img 
-            src={row.images[currentImageIndex[row._id]]} 
-            alt={row.name} 
-            className="w-16 h-16 object-cover rounded-md"
-          />
-          {/* Disable next button if only 1 image */}
-          <button 
-            onClick={() => handleNextImage(row._id, row.images)} 
-            disabled={row.images.length <= 1}
-            className={`text-xl ${row.images.length <= 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            &#9654; {/* Right arrow */}
-          </button>
-        </div>
-      )
-    }, // Updated Image column with arrows and disabled buttons for single image
-    { name: 'Name', selector: row => row.name, sortable: true },
-    { name: 'Description', selector: row => row.description, sortable: true }, 
-    { name: 'Category', selector: row => row.category, sortable: true },    
-    { name: 'Stock', selector: row => row.stock, sortable: true },          
-    { name: 'Price', selector: row => `$${row.price}`, sortable: true },
-    { name: 'Actions', cell: row => (
-      <div className="space-x-2">
-        <button 
-          onClick={() => handleEditProduct(row._id)} 
-          className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-700 transition duration-300"
-        >
-          Edit
-        </button>
-        <button 
-          onClick={() => handleDeleteProduct(row._id)} 
-          className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700 transition duration-300"
-        >
-          Delete
-        </button>
-      </div>
-    )}
+      name: 'images',
+      label: 'Images',
+      options: {
+        customBodyRender: (value, tableMeta) => {
+          const productId = products[tableMeta.rowIndex]._id;
+          const imageIndex = imageIndexMap[productId] || 0;
+
+          return (
+            <Box display="flex" alignItems="center">
+              {/* Previous Button */}
+              <IconButton
+                onClick={() => handleImageNavigation(productId, 'prev')}
+                disabled={imageIndex === 0}
+                size="small"
+              >
+                <ArrowBack />
+              </IconButton>
+
+              {/* Current Image */}
+              <img
+                src={value[imageIndex]}
+                alt={`Product Image ${imageIndex + 1}`}
+                style={{ width: 50, height: 50, margin: '0 5px' }}
+              />
+
+              {/* Next Button */}
+              <IconButton
+                onClick={() => handleImageNavigation(productId, 'next')}
+                disabled={imageIndex === value.length - 1}
+                size="small"
+              >
+                <ArrowForward />
+              </IconButton>
+            </Box>
+          );
+        },
+      },
+    },
+    {
+      name: 'details',
+      label: 'Details',
+      options: {
+        customBodyRenderLite: (dataIndex) => (
+          <Button onClick={() => toggleRow(dataIndex)}>
+            {expandedRows[dataIndex] ? 'Collapse' : 'Expand'}
+          </Button>
+        ),
+      },
+    },
   ];
 
+  const toggleRow = (index) => {
+    setExpandedRows((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
+  };
+
+  const options = {
+    expandableRows: true,
+    renderExpandableRow: (rowData, rowMeta) => {
+      const product = products[rowMeta.dataIndex];
+      return (
+        <Collapse in={expandedRows[rowMeta.dataIndex]}>
+          <Box padding={2}>
+            <Typography variant="body1"><strong>Description:</strong> {product.description}</Typography>
+            <Typography variant="body2"><strong>Stock:</strong> {product.stock}</Typography>
+          </Box>
+        </Collapse>
+      );
+    },
+    selectableRows: 'multiple',
+    onRowSelectionChange: (currentRowsSelected, allRowsSelected) => {
+      const selectedIds = allRowsSelected
+        .map(row => products[row.dataIndex]?._id)
+        .filter(id => id);
+      setSelectedProductIds(selectedIds);
+    },
+    selectToolbarPlacement: 'none',
+  };
+
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-bold">Products</h1>
-        <div className="space-x-4">
-          <button 
-            onClick={handleCreateProduct} 
-            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 transition duration-300"
-          >
-            Create Product
-          </button>
-          <button 
-            onClick={handleViewTrash} 
-            className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-700 transition duration-300"
-          >
-            View Trash
-          </button>
-        </div>
-      </div>
-      
-      {loading ? (
-        <p className="text-center">Loading...</p>
-      ) : (
-        <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-          <DataTable 
-            columns={columns} 
-            data={products} 
-            pagination 
-            highlightOnHover 
-            className="w-full"
-          />
-        </div>
-      )}
-    </div>
+    <Box>
+      <Box display="flex" gap={2} mb={2}>
+        <Button variant="contained" color="primary" onClick={() => navigate('/admin/products/create')}>
+          Create Product
+        </Button>
+        <Button variant="contained" color="secondary" onClick={handleUpdate} disabled={selectedProductIds.length === 0}>
+          Update Product
+        </Button>
+        <Button variant="contained" color="error" onClick={handleDelete} disabled={selectedProductIds.length === 0}>
+          Delete
+        </Button>
+        <Button variant="contained" onClick={() => navigate('/admin/products/trash')}>
+          Trash Bin
+        </Button>
+      </Box>
+      <MUIDataTable title="Product List" data={products} columns={columns} options={options} />
+    </Box>
   );
 };
 
-export default Product;
+export default ProductTable;

@@ -45,10 +45,28 @@ const App = () => {
                   <Route path="/verify-email" element={<VerifyEmail />} /> 
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
-                  <Route path="/shop" element={<ProtectedRoute element={<Shop />} />} />
-                  <Route path="/profile" element={<ProtectedRoute element={<Profile />} />} />
-                  <Route path="/edit-profile" element={<ProtectedRoute element={<EditProfile />} />} />
-                  <Route path="/edit-password" element={<ProtectedRoute element={<EditPassword />} />} />
+                  
+                  {/* Use ProtectedRoute as a wrapper */}
+                  <Route path="/shop" element={
+                    <ProtectedRoute>
+                      <Shop />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/profile" element={
+                    <ProtectedRoute>
+                      <Profile />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/edit-profile" element={
+                    <ProtectedRoute>
+                      <EditProfile />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/edit-password" element={
+                    <ProtectedRoute>
+                      <EditPassword />
+                    </ProtectedRoute>
+                  } />
                 </Routes>
               </main>
             </>

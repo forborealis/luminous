@@ -1,8 +1,12 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const userSchema = new mongoose.Schema({
+  firebaseUID: {
+    type: String,
+    required: true,
+    unique: true,
+  },
   name: {
     type: String,
     required: [true, 'Please enter your name'],
@@ -24,12 +28,6 @@ const userSchema = new mongoose.Schema({
   address: {
     type: String,
     required: [true, 'Please enter your address'],
-  },
-  password: {
-    type: String,
-    required: [true, 'Please enter your password'],
-    minlength: [6, 'Your password must be at least 6 characters long'],
-    select: false,
   },
   avatar: {
     public_id: {
@@ -58,26 +56,13 @@ const userSchema = new mongoose.Schema({
   resetPasswordExpire: Date,
 });
 
-// Encrypt password before saving user
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
-    next();
-  }
-  this.password = await bcrypt.hash(this.password, 10);
-});
-
-// Method to generate JWT token
 userSchema.methods.getJwtToken = function () {
   return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_TIME,
   });
 };
 
-// Method to compare password
-userSchema.methods.comparePassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
-};
-
-const User = mongoose.model('User', userSchema);
+// Prevent redefinition by checking for an existing model
+const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 module.exports = User;

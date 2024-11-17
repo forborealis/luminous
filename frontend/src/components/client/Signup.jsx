@@ -1,9 +1,11 @@
+// src/components/client/Signup.jsx
 import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { registerUser } from '../../firebase/authFunctions'; // Firebase registration function
+import AvatarEditorComponent from './AvatarEditor';
+import { toast } from 'react-toastify';
 import axios from 'axios';
-import AvatarEditorComponent from './AvatarEditor'; 
-import { toast } from 'react-toastify'; 
-import 'react-toastify/dist/ReactToastify.css'; 
+import 'react-toastify/dist/ReactToastify.css';
 
 const Signup = () => {
   const [email, setEmail] = useState('');
@@ -18,33 +20,40 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const avatar = avatarEditorRef.current.getCroppedImage();
-
-    const formData = {
-      email,
-      username,
-      name,
-      contactNumber,
-      address,
-      password,
-      avatar
-    };
-
+  
+    const avatar = avatarEditorRef.current?.getCroppedImage();
+  
     try {
+      const firebaseUser = await registerUser(email, password);
+  
+      const formData = {
+        firebaseUID: firebaseUser.uid,
+        email,
+        username,
+        name,
+        contactNumber,
+        address,
+        avatar,
+      };
+  
       const response = await axios.post('http://localhost:5000/api/v1/register', formData);
-
+  
       if (response.data.success) {
-        toast.success('Registration successful! Please check your email to verify your account.'); 
+        toast.success('Registration successful! Please check your email to verify your account.');
         navigate('/login');
       } else {
         setError(response.data.message);
       }
     } catch (error) {
-      setError('An error occurred. Please try again.');
+      if (error.message.includes('already in use')) {
+        setError('This email is already registered. Please log in or use a different email.');
+      } else {
+        setError('An error occurred during registration. Please try again.');
+      }
+      console.error('Error during registration:', error);
     }
   };
-
+  
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 font-montserrat">
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md">

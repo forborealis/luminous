@@ -1,12 +1,13 @@
+// src/components/client/Login.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { loginUser } from '../../firebase/authFunctions';
+import { toast } from 'react-toastify';
 import axios from 'axios';
-import { toast } from 'react-toastify'; 
-import 'react-toastify/dist/ReactToastify.css'; 
-import { authenticate, getToken } from '../../utils/helpers';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Login = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -15,28 +16,36 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     setError('');
-
-    if (!username) {
-      setError('Username is required.');
-      return;
+    
+    try {
+      const firebaseUser = await loginUser(email, password);
+      if (!firebaseUser?.uid) {
+        setError('Unable to authenticate with Firebase.');
+        return;
+      }
+  
+      console.log("Firebase UID:", firebaseUser.uid); // Debugging line
+  
+      const response = await axios.post('http://localhost:5000/api/v1/login', {
+        firebaseUID: firebaseUser.uid,
+      });
+  
+      if (response.data.success) {
+        // Store token in localStorage
+        localStorage.setItem('token', response.data.token);
+        toast.success('Login successful!');
+        navigate(redirect || '/shop');
+      } else {
+        setError(response.data.message || 'Login failed.');
+      }
+    } catch (error) {
+      console.error('Error during login:', error);
+      setError(error.response?.data?.message || 'Login failed. Please try again.');
     }
-
-    if (!password) {
-      setError('Password is required.');
-      return;
-    }
-
-    await authenticate(username, password, navigate, setError);
   };
-
-  useEffect(() => {
-    const token = getToken();
-    if (token) {
-      navigate(redirect || '/shop');
-    }
-  }, [navigate, redirect]);
+  
+  
 
   useEffect(() => {
     if (location.state?.unauthorized) {
@@ -51,15 +60,16 @@ const Login = () => {
         <h2 className="text-2xl font-bold mb-6 font-palanquin">Login</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-gray-700 mb-2 font-montserrat" htmlFor="username">
-              Username
+            <label className="block text-gray-700 mb-2 font-montserrat" htmlFor="email">
+              Email
             </label>
             <input
-              type="text"
-              id="username"
+              type="email"
+              id="email"
               className="w-full px-3 py-2 border rounded font-montserrat"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
             />
           </div>
           <div className="mb-4">
@@ -72,6 +82,7 @@ const Login = () => {
               className="w-full px-3 py-2 border rounded font-montserrat"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
             />
           </div>
           {error && <p className="text-red-500 mb-4 font-montserrat">{error}</p>}

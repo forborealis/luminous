@@ -9,15 +9,12 @@ const path = require('path');
 
 exports.registerUser = async (req, res) => {
   try {
-    const { name, username, email, contactNumber, address, password, avatar } = req.body;
+    const { firebaseUID, name, username, email, contactNumber, address, avatar } = req.body;
 
-    // Check if avatar is present
+    // Ensure avatar is present
     if (!avatar) {
-      console.error('No avatar uploaded');
       return res.status(400).json({ success: false, message: 'No avatar uploaded' });
     }
-
-    console.log('Avatar received:', avatar);
 
     // Upload avatar to Cloudinary
     const result = await cloudinary.uploader.upload(avatar, {
@@ -26,15 +23,14 @@ exports.registerUser = async (req, res) => {
       crop: 'scale',
     });
 
-    console.log('Cloudinary upload result:', result);
-
+    // Create the user in MongoDB with the firebaseUID field included
     const user = await User.create({
+      firebaseUID, // Ensure firebaseUID is saved here
       name,
       username,
       email,
       contactNumber,
       address,
-      password,
       avatar: {
         public_id: result.public_id,
         url: result.secure_url,
@@ -50,11 +46,7 @@ exports.registerUser = async (req, res) => {
     // Send verification email
     const verificationUrl = `${req.protocol}://${req.get('host')}/api/v1/verify-email?token=${verificationToken}`;
     const message = `
-      <div style="font-family: Arial, sans-serif; text-align: center; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
-        <h2 style="color: #333;">Good day, ${name}!</h2>
-        <p style="color: #555;">Just click the button below to finish verifying your account.</p>
-        <a href="${verificationUrl}" style="display: inline-block; padding: 10px 20px; color: white; background-color: #007BFF; text-decoration: none; border-radius: 5px;">Verify Account</a>
-      </div>
+      <div>Good day, ${name}! Please verify your email: <a href="${verificationUrl}">Verify</a></div>
     `;
 
     await sendEmail({
@@ -69,12 +61,10 @@ exports.registerUser = async (req, res) => {
     });
   } catch (error) {
     console.error('Error in registerUser:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server Error',
-    });
+    res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
+
 
 exports.verifyEmail = async (req, res) => {
     try {
@@ -107,63 +97,56 @@ exports.verifyEmail = async (req, res) => {
 
   exports.loginUser = async (req, res) => {
     try {
-      const { username, password } = req.body;
-  
-      // Check if username and password are provided
-      if (!username || !password) {
-        return res.status(400).json({ success: false, message: 'Please provide username and password' });
-      }
-  
-      // Find user by username
-      const user = await User.findOne({ username }).select('+password');
-  
-      if (!user) {
-        return res.status(401).json({ success: false, message: 'Invalid username or password' });
-      }
-  
-      // Check if user is verified
-      if (user.status !== 'Verified') {
-        return res.status(401).json({ success: false, message: 'Your account is not verified' });
-      }
-  
-      // Check if password matches
-      const isPasswordMatched = await user.comparePassword(password);
-  
-      if (!isPasswordMatched) {
-        return res.status(401).json({ success: false, message: 'Invalid username or password' });
-      }
-  
-      // Generate JWT token
-      const token = user.getJwtToken();
-  
-      res.status(200).json({
-        success: true,
-        token,
-      });
-    } catch (error) {
-      console.error('Error in loginUser:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Server Error',
-      });
-    }
-  };
+        const { firebaseUID } = req.body;
 
-    exports.getUserProfile = async (req, res) => {
-      try {
-        const userId = req.user.id; 
-        const user = await User.findById(userId).select('-password'); 
-    
-        if (!user) {
-          return res.status(404).json({ success: false, message: 'User not found' });
+        if (!firebaseUID) {
+            return res.status(400).json({ success: false, message: 'Firebase UID is required.' });
         }
-    
-        res.json({ success: true, user });
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-        res.status(500).json({ success: false, message: 'Server error' });
-      }
-    };
+
+        console.log("Received Firebase UID:", firebaseUID); // Debugging line
+
+        // Check if user exists in MongoDB by Firebase UID
+        const user = await User.findOne({ firebaseUID: firebaseUID.trim() }); // Ensure no leading/trailing spaces
+
+        if (!user) {
+            console.log("User not found for Firebase UID:", firebaseUID); // Debugging line
+            return res.status(401).json({ success: false, message: 'User not found' });
+        }
+
+        if (user.status !== 'Verified') {
+            console.log("User is not verified:", firebaseUID); // Debugging line
+            return res.status(401).json({ success: false, message: 'Your account is not verified' });
+        }
+
+        // Generate JWT token
+        const token = user.getJwtToken();
+        console.log("Generated JWT token:", token); // Debugging line
+
+        // Return token to client
+        res.status(200).json({ success: true, token });
+    } catch (error) {
+        console.error('Error in loginUser:', error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+  
+  
+
+exports.getUserProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.json({ success: true, user });
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
 
     
     exports.updateUserProfile = async (req, res) => {

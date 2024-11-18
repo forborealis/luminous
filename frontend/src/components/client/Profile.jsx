@@ -10,7 +10,7 @@ const Profile = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL; 
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'; 
         const token = localStorage.getItem('token');
         console.log('Token:', token); 
         console.log('API URL:', apiUrl); 

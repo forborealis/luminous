@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-import AvatarEditorComponent from './AvatarEditor'; 
-import { toast } from 'react-toastify'; 
+import AvatarEditorComponent from './AvatarEditor';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 
@@ -19,28 +19,28 @@ const EditProfile = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL; 
+        // Ensure the VITE_API_URL variable is accessed correctly
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'; 
         const token = localStorage.getItem('token');
-        console.log('Token:', token); 
-        console.log('API URL:', apiUrl); 
+        
         if (!token) {
           throw new Error('No token found');
         }
+
         const headers = {
           Authorization: `Bearer ${token}`
         };
-        console.log('Request Headers:', headers); 
+
         const response = await axios.get(`${apiUrl}/user`, { headers });
 
         if (response.data.success) {
           const { username, email, name, contactNumber, address, avatar } = response.data.user;
-          console.log('Fetched user data:', response.data.user); 
           setUsername(username);
           setEmail(email);
           setName(name);
           setContactNumber(contactNumber);
           setAddress(address);
-          setAvatar(avatar.url); 
+          setAvatar(avatar.url);
         } else {
           setError(response.data.message);
         }
@@ -64,11 +64,11 @@ const EditProfile = () => {
       name,
       contactNumber,
       address,
-      avatar: updatedAvatar 
+      avatar: updatedAvatar
     };
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL; 
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'; 
       const token = localStorage.getItem('token');
       if (!token) {
         throw new Error('No token found');
@@ -76,17 +76,17 @@ const EditProfile = () => {
       const headers = {
         Authorization: `Bearer ${token}`
       };
-      console.log('Request Headers:', headers); 
+
       const response = await axios.put(`${apiUrl}/user`, formData, { headers });
 
       if (response.data.success) {
-        toast.success('Profile updated successfully!'); 
-        navigate('/profile'); 
+        toast.success('Profile updated successfully!');
+        navigate('/profile');
       } else {
         setError(response.data.message);
       }
     } catch (error) {
-      console.error('Error updating user data:', error); 
+      console.error('Error updating user data:', error);
       setError('An error occurred. Please try again.');
     }
   };
@@ -96,12 +96,12 @@ const EditProfile = () => {
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
         <h2 className="text-2xl font-bold mb-6 font-palanquin">Edit Profile</h2>
         <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-            <label className="block text-gray-700 mb-2 font-montserrat" htmlFor="email">
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-2 font-montserrat" htmlFor="username">
               Username
             </label>
             <input
-              type="username"
+              type="text"
               id="username"
               className="w-full px-3 py-2 border rounded font-montserrat"
               value={username}
@@ -166,7 +166,7 @@ const EditProfile = () => {
               Upload Avatar
             </label>
             {avatar && (
-              <div class="mb-4">
+              <div className="mb-4">
                 <img src={avatar} alt="Current Avatar" className="w-24 h-24 rounded-full mx-auto" />
               </div>
             )}

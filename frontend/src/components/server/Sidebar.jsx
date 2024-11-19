@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, List, Divider, IconButton } from '@mui/material';
+import { Box, List, Divider, IconButton, Typography } from '@mui/material';
 import { DashboardOutlined, StorefrontOutlined, PeopleAltOutlined, ExpandLess, ExpandMore } from '@mui/icons-material';
 import Item from './Item';
 import headerLogo from '../../assets/images/header-logo.svg'; 
@@ -12,8 +12,27 @@ const Sidebar = () => {
   };
 
   return (
-    <Box sx={{ width: isExpanded ? 190 : 60, backgroundColor: '#E98EAD', height: '100vh', fontSize: '0.875rem', transition: 'width 0.3s', position: 'relative' }} className="font-montserrat">
-      <Box sx={{ display: 'flex', justifyContent: isExpanded ? 'space-between' : 'center', alignItems: 'center', padding: 1, marginTop: 1, marginBottom: 2 }}>
+    <Box
+      sx={{
+        width: isExpanded ? 190 : 60,
+        backgroundColor: '#E98EAD',
+        height: '170vh',
+        fontSize: '0.875rem',
+        transition: 'width 0.3s',
+        position: 'relative',
+        fontFamily: 'Montserrat, sans-serif' // Apply Montserrat font
+      }}
+    >
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: isExpanded ? 'space-between' : 'center',
+          alignItems: 'center',
+          padding: 1,
+          marginTop: 1,
+          marginBottom: 2
+        }}
+      >
         {isExpanded && <img src={headerLogo} alt="Header Logo" style={{ maxWidth: '100%', height: 'auto' }} />}
       </Box>
       <Divider sx={{ backgroundColor: 'white', width: isExpanded ? '80%' : '100%', margin: '0 auto' }} />

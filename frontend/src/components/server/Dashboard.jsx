@@ -5,7 +5,7 @@ import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import MainContent from './MainContent';
 import Product from './Products/Product';
-import CreateProduct from './Products/CreateProduct'; // Create product page
+import CreateProduct from './Products/CreateProduct'; 
 import UpdateProduct from './Products/UpdateProduct';
 import ProductDelete from './Products/ProductDelete';
 

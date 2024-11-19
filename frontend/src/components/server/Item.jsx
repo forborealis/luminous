@@ -1,5 +1,5 @@
 import React from 'react';
-import { ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import { ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
 
 const Item = ({ title, path, icon, isExpanded }) => {
@@ -27,7 +27,15 @@ const Item = ({ title, path, icon, isExpanded }) => {
       }}
     >
       <ListItemIcon sx={{ color: 'inherit' }}>{icon}</ListItemIcon>
-      {isExpanded && <ListItemText primary={title} sx={{ fontSize: '0.875rem' }} />} {/* Conditionally render text */}
+      {isExpanded && (
+        <ListItemText
+          primary={
+            <Typography sx={{ fontFamily: 'Montserrat, sans-serif', fontSize: '0.875rem' }}>
+              {title}
+            </Typography>
+          }
+        />
+      )}
     </ListItem>
   );
 };

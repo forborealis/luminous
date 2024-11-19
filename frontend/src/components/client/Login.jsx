@@ -17,20 +17,31 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
+
+    // Hardcoded admin credentials
+    const adminEmail = 'admin@gmail.com';
+    const adminPassword = 'admin123';
+
+    if (email === adminEmail && password === adminPassword) {
+      localStorage.setItem('isAdmin', 'true');
+      navigate('/admin/dashboard');
+      toast.success('Logged in as admin');
+      return;
+    }
+
     try {
       const firebaseUser = await loginUser(email, password);
       if (!firebaseUser?.uid) {
         setError('Unable to authenticate with Firebase.');
         return;
       }
-  
+
       console.log("Firebase UID:", firebaseUser.uid); // Debugging line
-  
+
       const response = await axios.post('http://localhost:5000/api/v1/login', {
         firebaseUID: firebaseUser.uid,
       });
-  
+
       if (response.data.success) {
         // Store token in localStorage
         localStorage.setItem('token', response.data.token);

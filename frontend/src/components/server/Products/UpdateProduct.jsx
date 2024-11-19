@@ -105,25 +105,41 @@ const UpdateProduct = () => {
     <Box
       component="form"
       onSubmit={handleSubmit(onSubmit)}
+      className="font-montserrat"
       sx={{
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 2,
-        maxWidth: 800,
+        gap: 1.5,
+        width: '40%', // Make the container wider
         margin: 'auto',
+        marginTop: 5, // Add margin to bring it lower
         padding: 4,
         borderRadius: 2,
         boxShadow: 3,
       }}
     >
       {/* Back Button */}
-      <Button variant="outlined" onClick={() => navigate('/admin/products')} sx={{ alignSelf: 'flex-start', mb: 2 }}>
+      <Button
+        variant="outlined"
+        onClick={() => navigate('/admin/products')}
+        sx={{
+          alignSelf: 'flex-start',
+          mb: 2,
+          fontFamily: 'Montserrat, sans-serif',
+          backgroundColor: 'light-pink',
+          '&:hover': {
+            backgroundColor: 'coral-red',
+          },
+        }}
+      >
         Back
       </Button>
 
-      <Typography variant="h4">Update Product</Typography>
+      <Typography variant="h4" gutterBottom sx={{ fontFamily: 'Montserrat, sans-serif' }}>
+        Update Product
+      </Typography>
 
       {/* Product Name */}
       <Controller
@@ -137,6 +153,8 @@ const UpdateProduct = () => {
             fullWidth
             error={!!errors.name}
             helperText={errors.name?.message}
+            InputLabelProps={{ style: { fontFamily: 'Montserrat, sans-serif' } }}
+            InputProps={{ style: { fontFamily: 'Montserrat, sans-serif' } }}
           />
         )}
       />
@@ -153,6 +171,8 @@ const UpdateProduct = () => {
             fullWidth
             error={!!errors.description}
             helperText={errors.description?.message}
+            InputLabelProps={{ style: { fontFamily: 'Montserrat, sans-serif' } }}
+            InputProps={{ style: { fontFamily: 'Montserrat, sans-serif' } }}
           />
         )}
       />
@@ -170,6 +190,8 @@ const UpdateProduct = () => {
             fullWidth
             error={!!errors.price}
             helperText={errors.price?.message}
+            InputLabelProps={{ style: { fontFamily: 'Montserrat, sans-serif' } }}
+            InputProps={{ style: { fontFamily: 'Montserrat, sans-serif' } }}
           />
         )}
       />
@@ -181,13 +203,17 @@ const UpdateProduct = () => {
         defaultValue=""
         render={({ field }) => (
           <FormControl fullWidth error={!!errors.category}>
-            <InputLabel>Category</InputLabel>
-            <Select {...field} label="Category">
+            <InputLabel sx={{ fontFamily: 'Montserrat, sans-serif' }}>Category</InputLabel>
+            <Select
+              {...field}
+              label="Category"
+              sx={{ fontFamily: 'Montserrat, sans-serif' }}
+            >
               {categoryOptions.map((option) => (
                 <MenuItem key={option} value={option}>{option}</MenuItem>
               ))}
             </Select>
-            {errors.category && <Typography color="error">{errors.category.message}</Typography>}
+            {errors.category && <Typography color="error" sx={{ fontFamily: 'Montserrat, sans-serif' }}>{errors.category.message}</Typography>}
           </FormControl>
         )}
       />
@@ -205,19 +231,21 @@ const UpdateProduct = () => {
             fullWidth
             error={!!errors.stock}
             helperText={errors.stock?.message}
+            InputLabelProps={{ style: { fontFamily: 'Montserrat, sans-serif' } }}
+            InputProps={{ style: { fontFamily: 'Montserrat, sans-serif' } }}
           />
         )}
       />
 
       {/* Current Images */}
-      <Typography variant="subtitle1" sx={{ mt: 2 }}>Current Images</Typography>
+      <Typography variant="subtitle1" sx={{ mt: 2, fontFamily: 'Montserrat, sans-serif' }}>Current Images</Typography>
       <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: 2 }}>
         {currentImages.length > 0 ? (
           currentImages.map((src, index) => (
             <img key={index} src={src} alt={`Current ${index + 1}`} style={{ width: 100, height: 100, borderRadius: 4 }} />
           ))
         ) : (
-          <Typography>No current images available.</Typography>
+          <Typography sx={{ fontFamily: 'Montserrat, sans-serif' }}>No current images available.</Typography>
         )}
       </Box>
 
@@ -227,14 +255,21 @@ const UpdateProduct = () => {
         component="label"
         fullWidth
         color={imageLimitExceeded ? "error" : "primary"}
-        sx={{ mt: 2 }}
+        sx={{
+          mt: 2,
+          fontFamily: 'Montserrat, sans-serif',
+          backgroundColor: 'light-pink',
+          '&:hover': {
+            backgroundColor: 'coral-red',
+          },
+        }}
       >
         {imageLimitExceeded ? "Limit Exceeded (Max 4 Images)" : "Choose New Files"}
         <input type="file" multiple accept="image/*" onChange={handleImageUpload} hidden />
       </Button>
 
       {/* New Image Previews */}
-      <Typography variant="subtitle1" sx={{ mt: 2 }}>New Images (if selected)</Typography>
+      <Typography variant="subtitle1" sx={{ mt: 2, fontFamily: 'Montserrat, sans-serif' }}>New Images (if selected)</Typography>
       <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: 2 }}>
         {imagePreviews.map((src, index) => (
           <img key={index} src={src} alt={`Preview ${index + 1}`} style={{ width: 100, height: 100, borderRadius: 4 }} />
@@ -242,7 +277,20 @@ const UpdateProduct = () => {
       </Box>
 
       {/* Submit Button */}
-      <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
+      <Button
+        type="submit"
+        variant="contained"
+        color="primary"
+        fullWidth
+        sx={{
+          mt: 2,
+          fontFamily: 'Montserrat, sans-serif',
+          backgroundColor: 'light-pink',
+          '&:hover': {
+            backgroundColor: 'coral-red',
+          },
+        }}
+      >
         Update Product
       </Button>
     </Box>

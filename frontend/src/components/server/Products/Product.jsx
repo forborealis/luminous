@@ -130,8 +130,8 @@ const ProductTable = () => {
       return (
         <Collapse in={expandedRows[rowMeta.dataIndex]}>
           <Box padding={2}>
-            <Typography variant="body1"><strong>Description:</strong> {product.description}</Typography>
-            <Typography variant="body2"><strong>Stock:</strong> {product.stock}</Typography>
+            <Typography variant="body1" className="font-montserrat"><strong>Description:</strong> {product.description}</Typography>
+            <Typography variant="body2" className="font-montserrat"><strong>Stock:</strong> {product.stock}</Typography>
           </Box>
         </Collapse>
       );
@@ -147,7 +147,7 @@ const ProductTable = () => {
   };
 
   return (
-    <Box>
+    <Box className="font-montserrat">
       <Box display="flex" gap={2} mb={2}>
         <Button variant="contained" color="primary" onClick={() => navigate('/admin/products/create')}>
           Create Product

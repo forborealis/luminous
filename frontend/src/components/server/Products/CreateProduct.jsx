@@ -84,14 +84,16 @@ const CreateProduct = () => {
     <Box
       component="form"
       onSubmit={handleSubmit(onSubmit)}
+      className="font-montserrat"
       sx={{
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 2,
-        maxWidth: 600,
+        gap: 1.5,
+        width: '40%', 
         margin: 'auto',
+        marginTop: 5, 
         padding: 4,
         borderRadius: 2,
         boxShadow: 3,
@@ -102,7 +104,9 @@ const CreateProduct = () => {
         Back
       </Button>
 
-      <Typography variant="h4" gutterBottom>Create New Product</Typography>
+      <Typography variant="h4" gutterBottom sx={{ fontFamily: 'Montserrat, sans-serif' }}>
+        Create New Product
+      </Typography>
 
       {/* Product Name */}
       <Controller
@@ -116,6 +120,8 @@ const CreateProduct = () => {
             fullWidth
             error={!!errors.name}
             helperText={errors.name?.message}
+            InputLabelProps={{ style: { fontFamily: 'Montserrat, sans-serif' } }}
+            InputProps={{ style: { fontFamily: 'Montserrat, sans-serif' } }}
           />
         )}
       />
@@ -132,6 +138,8 @@ const CreateProduct = () => {
             fullWidth
             error={!!errors.description}
             helperText={errors.description?.message}
+            InputLabelProps={{ style: { fontFamily: 'Montserrat, sans-serif' } }}
+            InputProps={{ style: { fontFamily: 'Montserrat, sans-serif' } }}
           />
         )}
       />
@@ -149,6 +157,8 @@ const CreateProduct = () => {
             fullWidth
             error={!!errors.price}
             helperText={errors.price?.message}
+            InputLabelProps={{ style: { fontFamily: 'Montserrat, sans-serif' } }}
+            InputProps={{ style: { fontFamily: 'Montserrat, sans-serif' } }}
           />
         )}
       />
@@ -160,13 +170,17 @@ const CreateProduct = () => {
         defaultValue=""
         render={({ field }) => (
           <FormControl fullWidth error={!!errors.category}>
-            <InputLabel>Category</InputLabel>
-            <Select {...field} label="Category">
+            <InputLabel sx={{ fontFamily: 'Montserrat, sans-serif' }}>Category</InputLabel>
+            <Select
+              {...field}
+              label="Category"
+              sx={{ fontFamily: 'Montserrat, sans-serif' }}
+            >
               {categoryOptions.map((option) => (
                 <MenuItem key={option} value={option}>{option}</MenuItem>
               ))}
             </Select>
-            {errors.category && <Typography color="error">{errors.category.message}</Typography>}
+            {errors.category && <Typography color="error" sx={{ fontFamily: 'Montserrat, sans-serif' }}>{errors.category.message}</Typography>}
           </FormControl>
         )}
       />
@@ -184,6 +198,8 @@ const CreateProduct = () => {
             fullWidth
             error={!!errors.stock}
             helperText={errors.stock?.message}
+            InputLabelProps={{ style: { fontFamily: 'Montserrat, sans-serif' } }}
+            InputProps={{ style: { fontFamily: 'Montserrat, sans-serif' } }}
           />
         )}
       />
@@ -194,6 +210,7 @@ const CreateProduct = () => {
         component="label"
         fullWidth
         color={imageLimitExceeded ? "error" : "primary"} // Change color based on image limit
+        sx={{ fontFamily: 'Montserrat, sans-serif' }}
       >
         {imageLimitExceeded ? "Limit Exceeded (Max 4 Images)" : "Choose Files"}
         <input type="file" multiple accept="image/*" onChange={handleImageUpload} hidden />
@@ -207,7 +224,9 @@ const CreateProduct = () => {
       </Box>
 
       {/* Submit Button */}
-      <Button type="submit" variant="contained" color="primary" fullWidth>Create Product</Button>
+      <Button type="submit" variant="contained" color="primary" fullWidth sx={{ fontFamily: 'Montserrat, sans-serif' }}>
+        Create Product
+      </Button>
     </Box>
   );
 };

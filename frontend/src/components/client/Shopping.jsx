@@ -87,7 +87,7 @@ const Shopping = () => {
   return (
     <div className="container mx-auto p-4 flex font-montserrat">
       <div className="w-1/4 p-4">
-        <h2 className="text-lg font-semibold mb-4">Filter by Price</h2>
+        <h2 className="text-lg font-semibold mb-4">Price Range</h2>
         <div className="mb-4">
           <div className="flex justify-between items-center mb-4">
             <input
@@ -132,7 +132,7 @@ const Shopping = () => {
           </div>
         </div>
 
-        <h2 className="text-lg font-semibold mb-4">Filter by Category</h2>
+        <h2 className="text-lg font-semibold mb-4">By Category</h2>
         <div className="mb-4">
           {categories.map((category) => (
             <div key={category} className="flex items-center mb-2">

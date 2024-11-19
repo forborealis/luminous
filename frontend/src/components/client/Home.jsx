@@ -96,7 +96,7 @@ const Home = () => {
                 ))}
               </Carousel>
               <div className="px-4 pb-4">
-                <h2 className="text-lg font-semibold mb-2 text-coral-red">{product.name}</h2>
+                <h2 className="text-lg mb-2 text-coral-red">{product.name}</h2>
                 <p className="text-sm text-gray-600 mb-3 truncate">{product.description}</p>
                 <p className="text-lg font-bold text-gray-900 mb-4">₱{product.price.toFixed(2)}</p>
               </div>

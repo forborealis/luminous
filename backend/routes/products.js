@@ -12,9 +12,9 @@ router.post('/products', upload.array('images', 4), productController.createProd
 router.get('/products/deleted', productController.getDeletedProducts);
 router.get('/products', productController.getAllProducts);
 router.put('/products/:id', upload.array('images', 4), productController.updateProduct);
-router.get('/products/:id', productController.getProductById);  // This should be last among these routes
 router.put('/products/:id/soft-delete', productController.softDeleteProduct);
 router.put('/products/:id/restore', productController.restoreProduct);
 router.delete('/products/:id', productController.permanentDeleteProduct);
+router.get('/products/:id', productController.getProductById);  // This should be last among these routes
 
 module.exports = router;

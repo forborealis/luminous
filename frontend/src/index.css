@@ -60,3 +60,12 @@
     @apply opacity-90 transition-all duration-150 ease-in;
   }
 }
+.custom-dot-list {
+  position: absolute;
+  bottom: 10px; /* Adjust this value to move the dots lower */
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}

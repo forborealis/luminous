@@ -1,5 +1,7 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import Nav from "./components/client/Nav";
+import LoggedInNav from "./components/client/LoggedInNav";
 import {
   Footer,
   Hero
@@ -15,11 +17,25 @@ import Dashboard from "./components/server/Dashboard";
 import Shop from './components/client/Shop';
 import EditProfile from './components/client/EditProfile';
 import Profile from './components/client/Profile';
+import Shopping from './components/client/Shopping';
+import ItemDetails from './components/client/ItemDetails';
 import EditPassword from './components/client/EditPassword';
 import ForgotPassword from './components/client/ForgotPassword';
 import ResetPassword from './components/client/ResetPassword';
 
 const App = () => {
+  const [loggedIn, setLoggedIn] = useState(!!localStorage.getItem("token"));
+
+  useEffect(() => {
+    const updateLoginState = () => setLoggedIn(!!localStorage.getItem("token"));
+    window.addEventListener("loginStateChange", updateLoginState);
+    updateLoginState(); // Update login state when component mounts
+
+    return () => {
+      window.removeEventListener("loginStateChange", updateLoginState);
+    };
+  }, []);
+
   return (
     <Router>
       <div>
@@ -28,7 +44,7 @@ const App = () => {
           <Route path="/admin/*" element={<Dashboard />} /> 
           <Route path="*" element={
             <>
-              <Nav /> 
+              {loggedIn ? <LoggedInNav /> : <Nav />}
               <main className="relative">
                 <Routes>
                   <Route path="/" element={
@@ -45,6 +61,8 @@ const App = () => {
                   <Route path="/verify-email" element={<VerifyEmail />} /> 
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/shopping" element={<Shopping />} />
+                  <Route path="/item-details/:productId" element={<ItemDetails />} />
                   
                   {/* Use ProtectedRoute as a wrapper */}
                   <Route path="/shop" element={

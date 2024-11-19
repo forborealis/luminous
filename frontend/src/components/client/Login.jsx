@@ -34,6 +34,7 @@ const Login = () => {
       if (response.data.success) {
         // Store token in localStorage
         localStorage.setItem('token', response.data.token);
+        window.dispatchEvent(new Event('loginStateChange')); // Dispatch the event
         toast.success('Login successful!');
         navigate(redirect || '/shop');
       } else {
@@ -44,8 +45,6 @@ const Login = () => {
       setError(error.response?.data?.message || 'Login failed. Please try again.');
     }
   };
-  
-  
 
   useEffect(() => {
     if (location.state?.unauthorized) {

@@ -1,5 +1,5 @@
 // controllers/ProductController.js
-
+const mongoose = require('mongoose');
 const Product = require('../models/products');
 const cloudinary = require('cloudinary').v2;
 

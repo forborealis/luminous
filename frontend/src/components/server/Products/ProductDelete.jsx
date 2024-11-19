@@ -3,6 +3,8 @@ import MUIDataTable from 'mui-datatables';
 import axios from 'axios';
 import { Button, Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { ThemeProvider } from '@mui/material/styles';
+import theme from './theme'; // Import the custom theme
 
 const ProductDelete = () => {
   const [deletedProducts, setDeletedProducts] = useState([]);
@@ -86,23 +88,63 @@ const ProductDelete = () => {
   };
 
   return (
-    <Box>
-      {/* Button group with Back, Restore, and Permanent Delete */}
-      <Box display="flex" gap={2} mb={2}>
-        <Button variant="outlined" onClick={() => navigate('/admin/products')}>
-          Back
-        </Button>
-        <Button variant="contained" color="primary" onClick={handleRestore} disabled={selectedProductIds.length === 0}>
-          Restore
-        </Button>
-        <Button variant="contained" color="error" onClick={handlePermanentDelete} disabled={selectedProductIds.length === 0}>
-          Permanently Delete
-        </Button>
-      </Box>
+    <ThemeProvider theme={theme}>
+      <Box sx={{ mt: 4 }}> {/* Add margin top to create gap between navbar and buttons */}
+        {/* Button group with Back, Restore, and Permanent Delete */}
+        <Box display="flex" gap={2} mb={2} justifyContent="center">
+          <Button
+            variant="outlined"
+            onClick={() => navigate('/admin/products')}
+            sx={{
+              fontFamily: 'Montserrat, sans-serif',
+              backgroundColor: 'light-pink',
+              '&:hover': {
+                backgroundColor: 'coral-red',
+              },
+            }}
+          >
+            Back
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleRestore}
+            disabled={selectedProductIds.length === 0}
+            sx={{
+              fontFamily: 'Montserrat, sans-serif',
+              backgroundColor: 'light-pink',
+              '&:hover': {
+                backgroundColor: 'coral-red',
+              },
+            }}
+          >
+            Restore
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handlePermanentDelete}
+            disabled={selectedProductIds.length === 0}
+            sx={{
+              fontFamily: 'Montserrat, sans-serif',
+              backgroundColor: 'light-pink',
+              '&:hover': {
+                backgroundColor: 'coral-red',
+              },
+            }}
+          >
+            Permanently Delete
+          </Button>
+        </Box>
 
-      {/* Deleted Products Table */}
-      <MUIDataTable title="Trash Bin" data={deletedProducts} columns={columns} options={options} />
-    </Box>
+        {/* Deleted Products Table */}
+        <Box display="flex" justifyContent="center">
+          <Box sx={{ width: '90%' }}> {/* Minimize the width of the DataTable */}
+            <MUIDataTable title="Trash Bin" data={deletedProducts} columns={columns} options={options} />
+          </Box>
+        </Box>
+      </Box>
+    </ThemeProvider>
   );
 };
 

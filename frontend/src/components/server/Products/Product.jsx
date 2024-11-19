@@ -4,6 +4,8 @@ import axios from 'axios';
 import { Button, Collapse, Typography, Box, IconButton } from '@mui/material';
 import { ArrowBack, ArrowForward } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { ThemeProvider } from '@mui/material/styles';
+import theme from './theme'; // Import the custom theme
 
 const ProductTable = () => {
   const [products, setProducts] = useState([]);
@@ -130,8 +132,8 @@ const ProductTable = () => {
       return (
         <Collapse in={expandedRows[rowMeta.dataIndex]}>
           <Box padding={2}>
-            <Typography variant="body1" className="font-montserrat"><strong>Description:</strong> {product.description}</Typography>
-            <Typography variant="body2" className="font-montserrat"><strong>Stock:</strong> {product.stock}</Typography>
+            <Typography variant="body1"><strong>Description:</strong> {product.description}</Typography>
+            <Typography variant="body2"><strong>Stock:</strong> {product.stock}</Typography>
           </Box>
         </Collapse>
       );
@@ -147,23 +149,29 @@ const ProductTable = () => {
   };
 
   return (
-    <Box className="font-montserrat">
-      <Box display="flex" gap={2} mb={2}>
-        <Button variant="contained" color="primary" onClick={() => navigate('/admin/products/create')}>
-          Create Product
-        </Button>
-        <Button variant="contained" color="secondary" onClick={handleUpdate} disabled={selectedProductIds.length === 0}>
-          Update Product
-        </Button>
-        <Button variant="contained" color="error" onClick={handleDelete} disabled={selectedProductIds.length === 0}>
-          Delete
-        </Button>
-        <Button variant="contained" onClick={() => navigate('/admin/products/trash')}>
-          Trash Bin
-        </Button>
+    <ThemeProvider theme={theme}>
+      <Box sx={{ mt: 3 }}> 
+        <Box display="flex" gap={2} mb={2} justifyContent="center">
+          <Button variant="contained" color="primary" onClick={() => navigate('/admin/products/create')}>
+            Create Product
+          </Button>
+          <Button variant="contained" color="secondary" onClick={handleUpdate} disabled={selectedProductIds.length === 0}>
+            Update Product
+          </Button>
+          <Button variant="contained" color="error" onClick={handleDelete} disabled={selectedProductIds.length === 0}>
+            Delete
+          </Button>
+          <Button variant="contained" onClick={() => navigate('/admin/products/trash')}>
+            Trash Bin
+          </Button>
+        </Box>
+        <Box display="flex" justifyContent="center">
+          <Box sx={{ width: '90%' }}> 
+            <MUIDataTable title="Product List" data={products} columns={columns} options={options} />
+          </Box>
+        </Box>
       </Box>
-      <MUIDataTable title="Product List" data={products} columns={columns} options={options} />
-    </Box>
+    </ThemeProvider>
   );
 };
 

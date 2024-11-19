@@ -2,12 +2,15 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { hamburger } from "../../assets/icons";
 import { headerLogo } from "../../assets/images";
+import { navLinks } from "../../constants";
+import { useLocation } from "react-router-dom";
 import ExitToAppIcon from '@mui/icons-material/ExitToApp'; 
 
 const LoggedInNav = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSignOut = () => {
     localStorage.removeItem("token");
@@ -32,18 +35,16 @@ const LoggedInNav = () => {
 
   return (
     <header
-      className={`px-4 py-3 bg-customColor text-white sticky top-0 z-50 ${
-        isScrolled ? "scrolled" : ""
-    }font-montserrat`}
+      className={`px-4 py-3 bg-customColor text-white sticky top-0 z-50 ${isScrolled ? "scrolled" : ""} font-montserrat`}
     >
       <div className="flex items-center justify-between max-w-6xl mx-auto">
-        <Link to="/shop" className="text-2xl font-semibold">
+        <Link to="/" className="text-2xl font-semibold">
           <img src={headerLogo} alt="logo" className="w-32" />
         </Link>
         <ul className="hidden space-x-6 lg:flex">
           <li>
             <Link
-              to="/Shopping"
+              to="/shopping"
               className="hover:text-coral-red transition duration-300"
             >
               Products

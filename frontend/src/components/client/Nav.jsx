@@ -33,9 +33,7 @@ const Nav = () => {
 
   return (
     <header
-      className={`px-4 py-3 bg-customColor text-white sticky top-0 z-50 ${
-        isScrolled ? "scrolled" : ""
-      }font-montserrat`}
+      className={`px-4 py-3 bg-customColor text-white sticky top-0 z-50 ${isScrolled ? "scrolled" : ""} font-montserrat`}
     >
       <div className="flex items-center justify-between max-w-6xl mx-auto">
         <Link to="/" className="text-2xl font-semibold">

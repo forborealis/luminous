@@ -55,9 +55,6 @@ const App = () => {
                   <Route path="/verify-email" element={<VerifyEmail />} /> 
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
-                  <Route path="/shopping" element={<Shopping />} />
-                  <Route path="/item-details/:productId" element={<ItemDetails />} />
-                  <Route path="/cart" element={<Cart />} />
                   {/* Use ProtectedRoute as a wrapper */}
                   <Route path="/shop" element={
                     <ProtectedRoute>
@@ -77,6 +74,21 @@ const App = () => {
                   <Route path="/edit-password" element={
                     <ProtectedRoute>
                       <EditPassword />
+                    </ProtectedRoute>
+                  } />
+                   <Route path="/shopping" element={
+                    <ProtectedRoute>
+                      <Shopping />
+                    </ProtectedRoute>
+                  } />
+                   <Route path="/item-details/:productId" element={
+                    <ProtectedRoute>
+                      <ItemDetails />
+                    </ProtectedRoute>
+                  } />
+                   <Route path="/cart" element={
+                    <ProtectedRoute>
+                      <Cart />
                     </ProtectedRoute>
                   } />
                 </Routes>

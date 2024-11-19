@@ -43,7 +43,7 @@ const LoggedInNav = () => {
       className={`px-4 py-3 bg-customColor text-white sticky top-0 z-50 ${isScrolled ? "scrolled" : ""} font-montserrat`}
     >
       <div className="flex items-center justify-between max-w-6xl mx-auto">
-        <Link to="/" className="text-2xl font-semibold">
+        <Link to="/shop" className="text-2xl font-semibold">
           <img src={headerLogo} alt="logo" className="w-32" />
         </Link>
         <ul className="hidden space-x-6 lg:flex">

@@ -4,7 +4,8 @@ import { hamburger } from "../../assets/icons";
 import { headerLogo } from "../../assets/images";
 import { navLinks } from "../../constants";
 import { useLocation } from "react-router-dom";
-import ExitToAppIcon from '@mui/icons-material/ExitToApp'; 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSignOutAlt, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 
 const LoggedInNav = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -16,6 +17,10 @@ const LoggedInNav = () => {
     localStorage.removeItem("token");
     window.dispatchEvent(new Event('loginStateChange')); 
     navigate("/login");
+  };
+
+  const handleCartClick = () => {
+    navigate("/cart"); // Navigate to the cart page
   };
 
   const handleScroll = () => {
@@ -78,9 +83,15 @@ const LoggedInNav = () => {
           </div>
           <button
             className="text-white hover:text-coral-red transition duration-300"
+            onClick={handleCartClick}
+          >
+            <FontAwesomeIcon icon={faShoppingCart} />
+          </button>
+          <button
+            className="text-white hover:text-coral-red transition duration-300"
             onClick={handleSignOut}
           >
-            <ExitToAppIcon />
+            <FontAwesomeIcon icon={faSignOutAlt} />
           </button>
         </div>
         <div className="lg:hidden">

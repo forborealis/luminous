@@ -8,7 +8,8 @@ import Product from './Products/Product';
 import CreateProduct from './Products/CreateProduct'; 
 import UpdateProduct from './Products/UpdateProduct';
 import ProductDelete from './Products/ProductDelete';
-
+import ProtectedAdminRoute from '../ProtectedAdminRoute'; // Import the ProtectedAdminRoute component
+import { ToastContainer } from 'react-toastify'; // Import ToastContainer
 
 const Dashboard = () => {
   return (
@@ -17,12 +18,13 @@ const Dashboard = () => {
       <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
         <Navbar />
         <Routes>
-          <Route path="/dashboard" element={<MainContent />} />
-          <Route path="/products" element={<Product />} /> {/* Product DataTable Route */}
-          <Route path="/products/create" element={<CreateProduct />} />
-          <Route path="/products/update/:id" element={<UpdateProduct />} />
-          <Route path="/products/trash" element={<ProductDelete />} />
+          <Route path="/dashboard" element={<ProtectedAdminRoute><MainContent /></ProtectedAdminRoute>} />
+          <Route path="/products" element={<ProtectedAdminRoute><Product /></ProtectedAdminRoute>} /> {/* Product DataTable Route */}
+          <Route path="/products/create" element={<ProtectedAdminRoute><CreateProduct /></ProtectedAdminRoute>} />
+          <Route path="/products/update/:id" element={<ProtectedAdminRoute><UpdateProduct /></ProtectedAdminRoute>} />
+          <Route path="/products/trash" element={<ProtectedAdminRoute><ProductDelete /></ProtectedAdminRoute>} />
         </Routes>
+        <ToastContainer /> {/* Add ToastContainer to display toasts */}
       </Box>
     </Box>
   );

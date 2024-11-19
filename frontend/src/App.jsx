@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import Nav from "./components/client/Nav";
 import LoggedInNav from "./components/client/LoggedInNav";
+import 'react-toastify/dist/ReactToastify.css';
 import {
   Footer,
   Hero

@@ -25,6 +25,7 @@
     "formik": "^2.4.6",
     "mui-datatables": "^4.3.0",
     "prettier": "^3.0.1",
+    "rc-slider": "^11.1.7",
     "react": "^18.2.0",
     "react-avatar-editor": "^13.0.2",
     "react-dom": "^18.2.0",

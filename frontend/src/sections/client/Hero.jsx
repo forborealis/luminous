@@ -39,8 +39,11 @@ const Hero = () => {
           className="object-contain relative z-10"
         />
       </div>
+      
     </section>
+    
   );
 };
+
 
 export default Hero;

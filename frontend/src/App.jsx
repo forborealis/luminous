@@ -7,6 +7,7 @@ import {
   Hero
 } from "./sections/client";
 import ProtectedRoute from './components/ProtectedRoute';
+import Home from "./components/client/Home";
 import Login from "./components/client/Login";
 import Signup from "./components/client/Signup";
 import Products from "./components/client/Products";
@@ -47,14 +48,7 @@ const App = () => {
               {loggedIn ? <LoggedInNav /> : <Nav />}
               <main className="relative">
                 <Routes>
-                  <Route path="/" element={
-                    <>
-                      <section className="xl:padding-l wide:padding-r padding-b">
-                        <Hero />
-                      </section>
-                      <Footer /> 
-                    </>
-                  } />
+                  <Route path="/" element={<Home />} />
                   <Route path="/products" element={<Products />} />
                   <Route path="/login" element={<Login />}/>
                   <Route path="/signup" element={<Signup />} />

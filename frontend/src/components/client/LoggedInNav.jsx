@@ -10,12 +10,14 @@ import { faSignOutAlt, faShoppingCart } from '@fortawesome/free-solid-svg-icons'
 const LoggedInNav = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
   const navigate = useNavigate();
   const location = useLocation();
 
   const handleSignOut = () => {
     localStorage.removeItem("token");
     window.dispatchEvent(new Event('loginStateChange')); 
+    setIsLoggedIn(false);
     navigate("/login");
   };
 
@@ -35,6 +37,18 @@ const LoggedInNav = () => {
     window.addEventListener("scroll", handleScroll);
     return () => {
       window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleLoginStateChange = () => {
+      setIsLoggedIn(!!localStorage.getItem('token'));
+    };
+
+    window.addEventListener('loginStateChange', handleLoginStateChange);
+
+    return () => {
+      window.removeEventListener('loginStateChange', handleLoginStateChange);
     };
   }, []);
 

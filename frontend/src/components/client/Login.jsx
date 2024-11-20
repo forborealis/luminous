@@ -5,6 +5,8 @@ import { loginUser } from '../../firebase/authFunctions';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import 'react-toastify/dist/ReactToastify.css';
+import { auth, googleProvider } from '../../firebase/firebase'; // Import Firebase config
+import { signInWithPopup } from 'firebase/auth';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -13,6 +15,32 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const redirect = location.search ? new URLSearchParams(location.search).get('redirect') : '';
+
+  const handleGoogleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      const formData = {
+        firebaseUID: user.uid,
+        email: user.email,
+      };
+
+      const response = await axios.post('http://localhost:5000/api/v1/login', formData);
+
+      if (response.data.success) {
+        // Store the token in local storage
+        localStorage.setItem('token', response.data.token);
+        toast.success('Google Login successful!');
+        window.dispatchEvent(new Event('loginStateChange')); 
+        navigate('/shop'); // Redirect to shop
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      console.error('Error during Google Login:', error);
+      toast.error('Google Login failed. Please try again.');
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,7 +64,7 @@ const Login = () => {
         return;
       }
 
-      console.log("Firebase UID:", firebaseUser.uid); // Debugging line
+      console.log("Firebase UID:", firebaseUser.uid); 
 
       const response = await axios.post('http://localhost:5000/api/v1/login', {
         firebaseUID: firebaseUser.uid,
@@ -45,7 +73,7 @@ const Login = () => {
       if (response.data.success) {
         // Store token in localStorage
         localStorage.setItem('token', response.data.token);
-        window.dispatchEvent(new Event('loginStateChange')); // Dispatch the event
+        window.dispatchEvent(new Event('loginStateChange')); 
         toast.success('Login successful!');
         navigate(redirect || '/shop');
       } else {
@@ -103,6 +131,12 @@ const Login = () => {
             Login
           </button>
         </form>
+        <button
+          onClick={handleGoogleLogin}
+          className="w-full bg-blue-500 text-white py-2 rounded mt-4 hover:bg-blue-600 font-montserrat"
+        >
+          Login with Google
+        </button>
         <p className="mt-4 text-center font-montserrat">
           Don't have an account?{' '}
           <Link to="/signup" className="text-coral-red hover:underline">

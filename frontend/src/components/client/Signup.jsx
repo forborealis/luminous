@@ -6,6 +6,8 @@ import AvatarEditorComponent from './AvatarEditor';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import 'react-toastify/dist/ReactToastify.css';
+import { auth, googleProvider } from '../../firebase/firebase'; // Import Firebase config
+import { signInWithPopup } from 'firebase/auth';
 
 const Signup = () => {
   const [email, setEmail] = useState('');
@@ -17,6 +19,38 @@ const Signup = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const avatarEditorRef = useRef(null);
+
+  const handleGoogleSignUp = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      // Save the user information to your backend
+      const formData = {
+        firebaseUID: user.uid,
+        email: user.email,
+        username: user.displayName,
+        name: user.displayName,
+        contactNumber: '',
+        address: '',
+        avatar: user.photoURL,
+        status: 'Verified', // Set status to Verified for Google Sign-Up
+      };
+
+      const response = await axios.post('http://localhost:5000/api/v1/register', formData);
+
+      if (response.data.success) {
+        // Store the token in local storage
+        localStorage.setItem('token', response.data.token);
+        toast.success('Google Sign-Up successful!');
+        navigate('/edit-profile'); // Redirect to edit profile page
+      } else {
+        setError(response.data.message);
+      }
+    } catch (error) {
+      console.error('Error during Google Sign-Up:', error);
+      toast.error('Google Sign-Up failed. Please try again.');
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -53,7 +87,7 @@ const Signup = () => {
       console.error('Error during registration:', error);
     }
   };
-  
+
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 font-montserrat">
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
@@ -151,6 +185,12 @@ const Signup = () => {
             Sign Up
           </button>
         </form>
+        <button
+          onClick={handleGoogleSignUp}
+          className="w-full bg-blue-500 text-white py-2 rounded mt-4 hover:bg-blue-600 font-montserrat"
+        >
+          Sign Up with Google
+        </button>
         <p className="mt-4 text-center font-montserrat">
           Already have an account?{' '}
           <Link to="/login" className="text-coral-red hover:underline">

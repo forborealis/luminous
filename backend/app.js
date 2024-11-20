@@ -4,6 +4,9 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const auth = require('./routes/auth');
 const productRoutes = require('./routes/products');
+const transactionRoutes = require('./routes/transaction'); 
+
+
 
 
 app.use(cors({
@@ -22,6 +25,9 @@ app.use(cookieParser());
 // Routes
 app.use('/api/v1', auth);
 app.use('/api/v1', productRoutes);
+app.use('/api/v1', transactionRoutes); 
+
+
 
 
 

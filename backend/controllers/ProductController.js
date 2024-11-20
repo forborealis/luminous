@@ -55,15 +55,26 @@ exports.createProduct = async (req, res) => {
 };
 
 // Get all products
+// Get all products with an optional stock filter
 exports.getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find({ deleted: false });
+    const { filterStock } = req.query; // Check if stock filtering is required
+    let query = { deleted: false };
+
+    // If filterStock is true, only include products with stock greater than 0
+    if (filterStock === 'true') {
+      query.stock = { $gt: 0 };
+    }
+
+    const products = await Product.find(query);
     const categoryOptions = Product.schema.path('category').enumValues;
     res.json({ products, categoryOptions });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
+
 exports.getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);

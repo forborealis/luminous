@@ -24,6 +24,9 @@ import EditPassword from './components/client/EditPassword';
 import ForgotPassword from './components/client/ForgotPassword';
 import ResetPassword from './components/client/ResetPassword';
 import Cart from './components/client/Cart';
+import Checkout from './components/client/Checkout'; 
+import Order from './components/client/Order';
+
 const App = () => {
   const [loggedIn, setLoggedIn] = useState(!!localStorage.getItem("token"));
 
@@ -91,6 +94,15 @@ const App = () => {
                       <Cart />
                     </ProtectedRoute>
                   } />
+                  <Route path="/checkout" element={
+                    <ProtectedRoute>
+                       <Checkout />
+                  </ProtectedRoute>
+                  } />
+                 <Route path="/order" element={
+                  <ProtectedRoute>
+                    <Order />
+                    </ProtectedRoute>} />
                 </Routes>
               </main>
             </>

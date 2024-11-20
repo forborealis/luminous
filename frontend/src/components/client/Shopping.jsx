@@ -3,6 +3,9 @@ import axios from 'axios';
 import { ShoppingCart } from '@mui/icons-material'; // MUI Shopping Cart icon
 import { useNavigate } from 'react-router-dom';
 import Slider from 'rc-slider';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 import 'rc-slider/assets/index.css';
 
 const Shopping = () => {
@@ -20,12 +23,13 @@ const Shopping = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/v1/products'); // Update this URL if needed
+        // Include the filterStock parameter in the API call
+        const response = await axios.get('http://localhost:5000/api/v1/products?filterStock=true');
         const products = Array.isArray(response.data.products) ? response.data.products : [];
         setProducts(products);
         setFilteredProducts(products);
         setLoading(false);
-
+  
         // Extract unique categories from products
         const uniqueCategories = [...new Set(products.map(product => product.category))];
         setCategories(uniqueCategories);
@@ -35,10 +39,10 @@ const Shopping = () => {
         setLoading(false);
       }
     };
-
+  
     fetchProducts();
   }, []);
-
+  
   useEffect(() => {
     const filtered = products.filter(product => {
       const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
@@ -63,6 +67,21 @@ const Shopping = () => {
     setMaxPrice(value);
     setPriceRange([priceRange[0], value]);
   };
+  const handleAddToCart = async (product) => {
+    try {
+      const response = await axios.post(
+        'http://localhost:5000/api/v1/cart',
+        { productId: product._id, quantity: 1 },
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+      );
+      toast.success(`${product.name} added to cart`);
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast.error(error.response?.data?.message || 'Error adding to cart');
+    }
+  };
+  
+  
 
   const handleCategoryChange = (category) => {
     setSelectedCategories((prevSelectedCategories) =>
@@ -168,12 +187,14 @@ const Shopping = () => {
                 <p className="text-sm text-gray-600 mb-3 truncate">{product.description}</p>
                 <p className="text-lg font-bold text-gray-900 mb-4">₱{product.price.toFixed(2)}</p>
                 <div className="flex justify-end">
-                  <button
-                    className="text-black-500 hover:text-coral-red transition duration-300"
-                    aria-label="Add to Cart"
-                  >
-                    <ShoppingCart fontSize="medium" />
-                  </button>
+                <button
+  onClick={() => handleAddToCart(product)}
+  className="text-black-500 hover:text-coral-red transition duration-300"
+  aria-label="Add to Cart"
+>
+        <ShoppingCart fontSize="medium" />
+            </button>
+
                 </div>
               </div>
             </div>

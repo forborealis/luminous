@@ -8,6 +8,7 @@ import Product from './Products/Product';
 import CreateProduct from './Products/CreateProduct'; 
 import UpdateProduct from './Products/UpdateProduct';
 import ProductDelete from './Products/ProductDelete';
+// import Order from './Orders/OrderTable';
 
 
 const Dashboard = () => {
@@ -22,6 +23,8 @@ const Dashboard = () => {
           <Route path="/products/create" element={<CreateProduct />} />
           <Route path="/products/update/:id" element={<UpdateProduct />} />
           <Route path="/products/trash" element={<ProductDelete />} />
+          {/* <Route path="/order" element={<Order />} /> Product DataTable Route */}
+
         </Routes>
       </Box>
     </Box>

@@ -3,6 +3,9 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
+import { auth } from '../../firebase/firebase'; 
+import { updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
+import Button from '@mui/material/Button'; 
 
 const EditPassword = () => {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -29,32 +32,21 @@ const EditPassword = () => {
       return;
     }
 
-    const formData = {
-      currentPassword,
-      newPassword
-    };
-
     try {
-      const apiUrl = import.meta.env.VITE_API_URL; 
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No token found');
+      const user = auth.currentUser;
+      if (!user) {
+        throw new Error('No user is currently signed in.');
       }
-      const headers = {
-        Authorization: `Bearer ${token}`
-      };
-      console.log('Request Headers:', headers); 
-      const response = await axios.put(`${apiUrl}/user/password`, formData, { headers });
 
-      if (response.data.success) {
-        toast.success('Password updated successfully! Please log in again.'); 
-        localStorage.removeItem('token'); 
-        navigate('/login'); 
-      } else {
-        setError(response.data.message);
-      }
+      const credential = EmailAuthProvider.credential(user.email, currentPassword);
+      await reauthenticateWithCredential(user, credential);
+
+      await updatePassword(user, newPassword);
+      toast.success('Password updated successfully! Please log in again.');
+      localStorage.removeItem('token');
+      navigate('/login');
     } catch (error) {
-      console.error('Error updating password:', error); 
+      console.error('Error updating password:', error);
       setError('An error occurred. Please try again.');
     }
   };
@@ -62,7 +54,7 @@ const EditPassword = () => {
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 font-montserrat">
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 font-palanquin">Edit Password</h2>
+        <h2 className="text-2xl font-bold mb-6 font-montserrat text-center">Edit Password</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-gray-700 mb-2 font-montserrat" htmlFor="newPassword">
@@ -104,12 +96,20 @@ const EditPassword = () => {
             />
           </div>
           {error && <p className="text-red-500 mb-4 font-montserrat">{error}</p>}
-          <button
+          <Button
             type="submit"
-            className="w-full bg-coral-red text-white py-2 rounded hover:bg-coral-red-dark font-montserrat"
+            variant="contained"
+            fullWidth
+            className="font-montserrat"
+            sx={{
+              backgroundColor: 'coral-red',
+              '&:hover': {
+                backgroundColor: 'coral-red-dark',
+              },
+            }}
           >
             Save Changes
-          </button>
+          </Button>
         </form>
       </div>
     </div>

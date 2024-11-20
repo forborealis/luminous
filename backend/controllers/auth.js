@@ -218,39 +218,23 @@ exports.getUserProfile = async (req, res) => {
 
 exports.updateUserPassword = async (req, res) => {
   try {
-    const userId = req.user.id; 
-    const { currentPassword, newPassword } = req.body;
+    const { firebaseUID, newPassword } = req.body;
 
-    console.log('User ID:', userId); 
-    console.log('Request Body:', req.body); 
+    if (!firebaseUID || !newPassword) {
+      return res.status(400).json({ success: false, message: 'Firebase UID and new password are required.' });
+    }
 
-    const user = await User.findById(userId).select('+password');
+    // Find the user by Firebase UID
+    const user = await User.findOne({ firebaseUID: firebaseUID.trim() });
 
     if (!user) {
-      console.error('User not found'); 
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    const isMatch = await bcrypt.compare(currentPassword, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ success: false, message: 'Current password is incorrect' });
-    }
 
-    user.password = newPassword;
-    await user.save();
-
-    // End the session if using sessions
-    if (req.session) {
-      req.session.destroy((err) => {
-        if (err) {
-          console.error('Error ending session:', err);
-        }
-      });
-    }
-
-    res.json({ success: true, message: 'Password updated successfully' });
+    res.status(200).json({ success: true, message: 'Password updated successfully' });
   } catch (error) {
-    console.error('Error updating password:', error);
+    console.error('Error updating user password:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };

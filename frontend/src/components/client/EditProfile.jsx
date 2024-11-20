@@ -6,6 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
+import Button from '@mui/material/Button'; 
 
 const EditProfile = () => {
   const [avatar, setAvatar] = useState('');
@@ -153,13 +154,21 @@ const EditProfile = () => {
                 <AvatarEditorComponent ref={avatarEditorRef} />
               </div>
               {error && <p className="text-red-500 mb-4 font-montserrat">{error}</p>}
-              <button
+              <Button
                 type="submit"
-                className="w-full bg-coral-red text-white py-2 rounded hover:bg-coral-red-dark font-montserrat"
+                variant="contained"
+                fullWidth
                 disabled={isSubmitting}
+                className="font-montserrat"
+                sx={{
+                  backgroundColor: 'coral-red',
+                  '&:hover': {
+                    backgroundColor: 'coral-red-dark',
+                  },
+                }}
               >
                 {isSubmitting ? 'Updating...' : 'Update Profile'}
-              </button>
+              </Button>
             </Form>
           )}
         </Formik>

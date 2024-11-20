@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Button from '@mui/material/Button'; 
+import Avatar from '@mui/material/Avatar'; 
 
 const Profile = () => {
   const [user, setUser] = useState({});
@@ -20,18 +22,11 @@ const Profile = () => {
         const headers = {
           Authorization: `Bearer ${token}`
         };
-        console.log('Request Headers:', headers); 
         const response = await axios.get(`${apiUrl}/user`, { headers });
-
-        if (response.data.success) {
-          console.log('Fetched user data:', response.data.user); 
-          setUser(response.data.user);
-        } else {
-          setError(response.data.message);
-        }
+        setUser(response.data.user);
       } catch (error) {
-        console.error('Error fetching user data:', error); 
-        setError('An error occurred. Please try again.');
+        console.error('Error fetching user data:', error);
+        setError('Failed to load user data. Please try again.');
       }
     };
 
@@ -42,38 +37,84 @@ const Profile = () => {
     navigate('/edit-profile');
   };
 
+  if (!user) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 font-montserrat">
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
-      <h2 className="text-2xl font-bold mb-6 font-palanquin text-center">@{user.username}</h2>
-        {user.avatar && (
-          <div className="mb-4 flex justify-center">
-            <img src={user.avatar.url} alt="Avatar" className="w-24 h-24 rounded-full" />
-          </div>
-        )}
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2 font-montserrat">Email</label>
-          <p className="w-full px-3 py-2 border rounded font-montserrat">{user.email}</p>
+        <h2 className="text-2xl font-bold mb-6 font-montserrat text-center">@{user.username}</h2>
+        <div className="flex justify-center mb-6">
+          <Avatar
+            alt={user.username}
+            src={user.avatar?.url}
+            sx={{ width: 100, height: 100 }}
+          />
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700 mb-2 font-montserrat">Name</label>
-          <p className="w-full px-3 py-2 border rounded font-montserrat">{user.name}</p>
+          <label className="block text-gray-700 mb-2 font-montserrat" htmlFor="email">
+            Email
+          </label>
+          <input
+            type="email"
+            id="email"
+            value={user.email}
+            className="w-full px-3 py-2 border rounded font-montserrat"
+            disabled
+          />
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700 mb-2 font-montserrat">Contact Number</label>
-          <p className="w-full px-3 py-2 border rounded font-montserrat">{user.contactNumber}</p>
+          <label className="block text-gray-700 mb-2 font-montserrat" htmlFor="name">
+            Name
+          </label>
+          <input
+            type="text"
+            id="name"
+            value={user.name}
+            className="w-full px-3 py-2 border rounded font-montserrat"
+            disabled
+          />
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700 mb-2 font-montserrat">Address</label>
-          <p className="w-full px-3 py-2 border rounded font-montserrat">{user.address}</p>
+          <label className="block text-gray-700 mb-2 font-montserrat" htmlFor="contactNumber">
+            Contact Number
+          </label>
+          <input
+            type="text"
+            id="contactNumber"
+            value={user.contactNumber}
+            className="w-full px-3 py-2 border rounded font-montserrat"
+            disabled
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700 mb-2 font-montserrat" htmlFor="address">
+            Address
+          </label>
+          <input
+            type="text"
+            id="address"
+            value={user.address}
+            className="w-full px-3 py-2 border rounded font-montserrat"
+            disabled
+          />
         </div>
         {error && <p className="text-red-500 mb-4 font-montserrat">{error}</p>}
-        <button
+        <Button
+          variant="contained"
+          fullWidth
+          className="font-montserrat"
+          sx={{
+            backgroundColor: 'coral-red',
+            '&:hover': {
+              backgroundColor: 'coral-red-dark',
+            },
+          }}
           onClick={handleEditProfile}
-          className="w-full bg-coral-red text-white py-2 rounded hover:bg-coral-red-dark font-montserrat"
         >
           Edit Profile
-        </button>
+        </Button>
       </div>
     </div>
   );

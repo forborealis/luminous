@@ -112,7 +112,7 @@ exports.registerUser = async (req, res) => {
 
   exports.loginUser = async (req, res) => {
     try {
-      const { firebaseUID } = req.body;
+      const { firebaseUID, email, username, name, contactNumber, address, avatar, status } = req.body;
   
       if (!firebaseUID) {
         return res.status(400).json({ success: false, message: 'Firebase UID is required.' });
@@ -121,11 +121,41 @@ exports.registerUser = async (req, res) => {
       console.log("Received Firebase UID:", firebaseUID); // Debugging line
   
       // Check if user exists in MongoDB by Firebase UID
-      const user = await User.findOne({ firebaseUID: firebaseUID.trim() }); // Ensure no leading/trailing spaces
+      let user = await User.findOne({ firebaseUID: firebaseUID.trim() }); // Ensure no leading/trailing spaces
   
       if (!user) {
         console.log("User not found for Firebase UID:", firebaseUID); // Debugging line
-        return res.status(401).json({ success: false, message: 'User not found' });
+  
+        // Upload avatar to Cloudinary if provided
+        let avatarUrl = '';
+        let avatarPublicId = '';
+        if (avatar) {
+          const result = await cloudinary.uploader.upload(avatar, {
+            folder: 'avatars',
+            width: 150,
+            crop: 'scale',
+          });
+          avatarUrl = result.secure_url;
+          avatarPublicId = result.public_id;
+        }
+  
+        // Create new user
+        user = new User({
+          firebaseUID,
+          email,
+          username,
+          name,
+          contactNumber: contactNumber || 'N/A', // Provide default value if not available
+          address: address || 'N/A', // Provide default value if not available
+          avatar: {
+            public_id: avatarPublicId || 'default_public_id', // Provide default value if not available
+            url: avatarUrl || 'default_avatar_url', // Provide default value if not available
+          },
+          status: status || 'Verified', // Set status to Verified for Google Sign-Up
+        });
+  
+        await user.save();
+        console.log("New user created:", user); // Debugging line
       }
   
       if (user.status !== 'Verified') {
@@ -146,8 +176,6 @@ exports.registerUser = async (req, res) => {
       res.status(500).json({ success: false, message: 'Server Error' });
     }
   };
-  
-  
 
 exports.getUserProfile = async (req, res) => {
   try {

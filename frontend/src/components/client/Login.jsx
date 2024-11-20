@@ -23,18 +23,35 @@ const Login = () => {
       const formData = {
         firebaseUID: user.uid,
         email: user.email,
+        username: user.displayName,
+        name: user.displayName,
+        contactNumber: '',
+        address: '',
+        avatar: user.photoURL,
+        status: 'Verified', // Set status to Verified for Google Sign-Up
       };
 
-      const response = await axios.post('http://localhost:5000/api/v1/login', formData);
+      // Check if the user already exists in the backend
+      const checkResponse = await axios.post('http://localhost:5000/api/v1/login', formData);
 
-      if (response.data.success) {
-        // Store the token in local storage
-        localStorage.setItem('token', response.data.token);
+      if (checkResponse.data.success) {
+        // User exists, log them in
+        localStorage.setItem('token', checkResponse.data.token);
         toast.success('Google Login successful!');
-        window.dispatchEvent(new Event('loginStateChange')); 
-        navigate('/shop'); // Redirect to shop
+        window.dispatchEvent(new Event('loginStateChange')); // Dispatch the event
+        navigate(redirect || '/shop'); // Redirect to dashboard or any other page
       } else {
-        toast.error(response.data.message);
+        // User does not exist, sign them up
+        const signupResponse = await axios.post('http://localhost:5000/api/v1/register', formData);
+
+        if (signupResponse.data.success) {
+          localStorage.setItem('token', signupResponse.data.token);
+          toast.success('Google Sign-Up successful!');
+          window.dispatchEvent(new Event('loginStateChange')); // Dispatch the event
+          navigate('/edit-profile'); // Redirect to edit profile page
+        } else {
+          setError(signupResponse.data.message);
+        }
       }
     } catch (error) {
       console.error('Error during Google Login:', error);
@@ -64,7 +81,7 @@ const Login = () => {
         return;
       }
 
-      console.log("Firebase UID:", firebaseUser.uid); 
+      console.log("Firebase UID:", firebaseUser.uid); // Debugging line
 
       const response = await axios.post('http://localhost:5000/api/v1/login', {
         firebaseUID: firebaseUser.uid,
@@ -73,7 +90,7 @@ const Login = () => {
       if (response.data.success) {
         // Store token in localStorage
         localStorage.setItem('token', response.data.token);
-        window.dispatchEvent(new Event('loginStateChange')); 
+        window.dispatchEvent(new Event('loginStateChange')); // Dispatch the event
         toast.success('Login successful!');
         navigate(redirect || '/shop');
       } else {

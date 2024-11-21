@@ -6,6 +6,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const resetPass = require('../utils/sendEmail');
 const admin = require('firebase-admin');
 
 
@@ -61,22 +62,43 @@ exports.registerUser = async (req, res) => {
         expiresIn: '1h',
       });
 
-      // Send verification email
-      const verificationUrl = `${req.protocol}://${req.get('host')}/api/v1/verify-email?token=${verificationToken}`;
-      const message = `
-        <div>Good day, ${name}! Please verify your email: <a href="${verificationUrl}">Verify</a></div>
-      `;
-      await sendEmail({
-        email: user.email,
-        subject: 'Email Verification',
-        html: message,
-      });
+     // Send verification email
+    const verificationUrl = `${req.protocol}://${req.get('host')}/api/v1/verify-email?token=${verificationToken}`;
+    const message = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Email Verification</title>
+        <style>
+          @import url('https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
+        </style>
+      </head>
+      <body class="bg-gray-100">
+        <div class="max-w-lg mx-auto mt-10 bg-white p-6 rounded-lg shadow-lg">
+          <h2 class="text-2xl font-bold text-center mb-4">Email Verification</h2>
+          <p class="text-gray-700 mb-4">
+            Good day, ${name}! To finish setting up your Luminous account, please verify your email first.
+          </p>
+          <div class="text-center">
+            <a href="${verificationUrl}" class="bg-blue-500 text-white px-4 py-2 rounded inline-block">Verify</a>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    await sendEmail({
+      email: user.email,
+      subject: 'Email Verification',
+      html: message,
+    });
     }
 
     return res.status(201).json({
       success: true,
       message: 'User registered successfully. Please check your email to verify your account.',
-      token, // Send the token in the response
+      token, 
     });
   } catch (error) {
     console.error('Error in registerUser:', error);
@@ -256,23 +278,39 @@ exports.getUserProfile = async (req, res) => {
 
 exports.updateUserPassword = async (req, res) => {
   try {
-    const { firebaseUID, newPassword } = req.body;
+    const userId = req.user.id; 
+    const { currentPassword, newPassword } = req.body;
 
-    if (!firebaseUID || !newPassword) {
-      return res.status(400).json({ success: false, message: 'Firebase UID and new password are required.' });
-    }
+    console.log('User ID:', userId); 
+    console.log('Request Body:', req.body); 
 
-    // Find the user by Firebase UID
-    const user = await User.findOne({ firebaseUID: firebaseUID.trim() });
+    const user = await User.findById(userId).select('+password');
 
     if (!user) {
+      console.error('User not found'); 
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ success: false, message: 'Current password is incorrect' });
+    }
 
-    res.status(200).json({ success: true, message: 'Password updated successfully' });
+    user.password = newPassword;
+    await user.save();
+
+    // End the session if using sessions
+    if (req.session) {
+      req.session.destroy((err) => {
+        if (err) {
+          console.error('Error ending session:', err);
+        }
+      });
+    }
+
+    res.json({ success: true, message: 'Password updated successfully' });
   } catch (error) {
-    console.error('Error updating user password:', error);
+    console.error('Error updating password:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
@@ -287,26 +325,24 @@ exports.forgotPassword = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    const now = Date.now();
-    if (user.lastPasswordResetRequest && now - user.lastPasswordResetRequest < 60 * 1000) {
-      return res.status(429).json({ success: false, message: 'Please wait 60 seconds before requesting another reset email.' });
-    }
-
+    // Generate reset token
     const resetToken = crypto.randomBytes(20).toString('hex');
     const resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
-    const resetPasswordExpire = now + 10 * 60 * 1000; // 10 minutes
+    const resetPasswordExpire = Date.now() + 10 * 60 * 1000; // Token expires in 10 minutes
 
+    // Update user with reset token and expiration
     user.resetPasswordToken = resetPasswordToken;
     user.resetPasswordExpire = resetPasswordExpire;
-    user.lastPasswordResetRequest = now;
     await user.save();
+
+    const resetUrl = `http://localhost:5173/reset-password/${resetToken}`;
 
     const message = `
       <!DOCTYPE html>
       <html lang="en">
       <head>
         <meta charset="UTF-8">
-         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Password Reset Request</title>
         <style>
           @import url('https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
@@ -316,25 +352,29 @@ exports.forgotPassword = async (req, res) => {
         <div class="max-w-lg mx-auto mt-10 bg-white p-6 rounded-lg shadow-lg">
           <h2 class="text-2xl font-bold text-center mb-4">Password Reset Request</h2>
           <p class="text-gray-700 mb-4">
-            You are receiving this email because you recently sent a request to reset your password. If this isn't you, please disregard it. The token expires in 10 minutes (don't share it with anyone else).
+            You are receiving this email because you recently sent a request to reset your password. Please click the link below to reset your password:
           </p>
           <div class="text-center">
-            <span class="text-xl font-bold text-red-500">${resetToken}</span>
+            <a href="${resetUrl}" class="bg-blue-500 text-white px-4 py-2 rounded inline-block">Reset Password</a>
           </div>
+          <p class="text-gray-700 mt-4 text-center">
+            If you didn't request this, please disregard this email.
+          </p>
         </div>
       </body>
       </html>
     `;
 
-    await sendEmail({
-      email: user.email,
+    // Send email via Mailtrap
+    await resetPass({
+      email,
       subject: 'Password Reset Request',
       html: message,
     });
 
-    res.status(200).json({ success: true, message: 'Email sent' });
+    res.status(200).json({ success: true, message: 'Password reset email sent' });
   } catch (error) {
-    console.error('Error sending email:', error);
+    console.error('Error sending password reset email:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
@@ -343,30 +383,31 @@ exports.resetPassword = async (req, res) => {
   const { token, newPassword } = req.body;
 
   try {
+    if (!token) {
+      return res.status(400).json({ success: false, message: 'Token is required' });
+    }
+
     const resetPasswordToken = crypto.createHash('sha256').update(token).digest('hex');
 
     const user = await User.findOne({
       resetPasswordToken,
       resetPasswordExpire: { $gt: Date.now() }
-    }).select('+password');
+    });
 
     if (!user) {
-      return res.status(400).json({ success: false, message: 'Invalid token' });
+      return res.status(400).json({ success: false, message: 'Invalid or expired token' });
     }
 
-    const isSamePassword = await user.comparePassword(newPassword);
-    if (isSamePassword) {
-      return res.status(400).json({ success: false, message: 'Cannot use current password' });
-    }
-
+    // Update password and clear reset token and expiration
     user.password = newPassword;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
+
     await user.save();
 
-    res.status(200).json({ success: true, message: 'Password reset successfully' });
+    res.status(200).json({ success: true, message: 'Password updated successfully' });
   } catch (error) {
-    console.error('Error resetting password:', error);
+    console.error('Error updating user password:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };

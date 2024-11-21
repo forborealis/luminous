@@ -4,10 +4,13 @@ import { hamburger } from "../../assets/icons";
 import { headerLogo } from "../../assets/images";
 import { navLinks } from "../../constants";
 import { useLocation } from "react-router-dom";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSearch } from '@fortawesome/free-solid-svg-icons';
 
 const Nav = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Add this line
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -31,6 +34,14 @@ const Nav = () => {
     setIsDropdownOpen(false); 
   }, [location]);
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/products?search=${searchQuery}`);
+      setSearchQuery(''); // Clear the search bar after navigation
+    }
+  };
+
   return (
     <header
       className={`px-4 py-3 bg-customColor text-white sticky top-0 z-50 ${isScrolled ? "scrolled" : ""} font-montserrat`}
@@ -42,6 +53,14 @@ const Nav = () => {
         <ul className="hidden space-x-6 lg:flex">
           <li>
             <Link
+              to="/"
+              className="hover:text-coral-red transition duration-300"
+            >
+              Home
+            </Link>
+          </li>
+          <li>
+            <Link
               to="/products"
               className="hover:text-coral-red transition duration-300"
             >
@@ -49,12 +68,29 @@ const Nav = () => {
             </Link>
           </li>
         </ul>
-        <Link
-          to="/login"
-          className="text-white hover:text-coral-red transition duration-300"
-        >
-          Login
-        </Link>
+        <div className="flex items-center space-x-4">
+          <form onSubmit={handleSearch} className="flex items-center space-x-2">
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="px-6 py-1 border rounded text-black"
+            />
+            <button
+              type="submit"
+              className="text-white hover:text-coral-red transition duration-300"
+            >
+              <FontAwesomeIcon icon={faSearch} />
+            </button>
+          </form>
+          <Link
+            to="/login"
+            className="text-white hover:text-coral-red transition duration-300"
+          >
+            Login
+          </Link>
+        </div>
       </div>
     </header>
   );

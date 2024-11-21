@@ -11,6 +11,7 @@ router.post('/products', upload.array('images', 4), productController.createProd
 // Order matters here. Place `/products/deleted` before `/products/:id`
 router.get('/products/deleted', productController.getDeletedProducts);
 router.get('/products', productController.getAllProducts);
+router.get('/products/search', productController.getProductsForSearch); // Client-side search route
 router.put('/products/:id', upload.array('images', 4), productController.updateProduct);
 router.put('/products/:id/soft-delete', productController.softDeleteProduct);
 router.put('/products/:id/restore', productController.restoreProduct);

@@ -2,20 +2,19 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { hamburger } from "../../assets/icons";
 import { headerLogo } from "../../assets/images";
-import { navLinks } from "../../constants";
-import { useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignOutAlt, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 
 const LoggedInNav = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
   const navigate = useNavigate();
-  const location = useLocation();
 
   const handleSignOut = () => {
     localStorage.removeItem("token");
     window.dispatchEvent(new Event('loginStateChange')); 
+    setIsLoggedIn(false);
     navigate("/login");
   };
 
@@ -38,6 +37,18 @@ const LoggedInNav = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const handleLoginStateChange = () => {
+      setIsLoggedIn(!!localStorage.getItem('token'));
+    };
+
+    window.addEventListener('loginStateChange', handleLoginStateChange);
+
+    return () => {
+      window.removeEventListener('loginStateChange', handleLoginStateChange);
+    };
+  }, []);
+
   return (
     <header
       className={`px-4 py-3 bg-customColor text-white sticky top-0 z-50 ${isScrolled ? "scrolled" : ""} font-montserrat`}
@@ -57,42 +68,46 @@ const LoggedInNav = () => {
           </li>
         </ul>
         <div className="flex space-x-4 items-center relative">
-          <div className="relative">
-            <span
-              className="cursor-pointer text-white hover:text-coral-red transition duration-300"
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            >
-              Profile
-            </span>
-            {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-2 z-50">
-                <Link
-                  to="/profile"
-                  className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+          {isLoggedIn && (
+            <>
+              <div className="relative">
+                <span
+                  className="cursor-pointer text-white hover:text-coral-red transition duration-300"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 >
-                  Edit Profile
-                </Link>
-                <Link
-                  to="/edit-password"
-                  className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
-                >
-                  Edit Password
-                </Link>
+                  Profile
+                </span>
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-2 z-50">
+                    <Link
+                      to="/profile"
+                      className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                    >
+                      Edit Profile
+                    </Link>
+                    <Link
+                      to="/edit-password"
+                      className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                    >
+                      Edit Password
+                    </Link>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-          <button
-            className="text-white hover:text-coral-red transition duration-300"
-            onClick={handleCartClick}
-          >
-            <FontAwesomeIcon icon={faShoppingCart} />
-          </button>
-          <button
-            className="text-white hover:text-coral-red transition duration-300"
-            onClick={handleSignOut}
-          >
-            <FontAwesomeIcon icon={faSignOutAlt} />
-          </button>
+              <button
+                className="text-white hover:text-coral-red transition duration-300"
+                onClick={handleCartClick}
+              >
+                <FontAwesomeIcon icon={faShoppingCart} />
+              </button>
+              <button
+                className="text-white hover:text-coral-red transition duration-300"
+                onClick={handleSignOut}
+              >
+                <FontAwesomeIcon icon={faSignOutAlt} />
+              </button>
+            </>
+          )}
         </div>
         <div className="lg:hidden">
           <button

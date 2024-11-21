@@ -74,6 +74,18 @@ exports.getAllProducts = async (req, res) => {
   }
 };
 
+exports.getProductsForInfiniteScroll = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 8;
+    const skip = (page - 1) * limit;
+
+    const products = await Product.find({ deleted: false }).skip(skip).limit(limit);
+    res.json({ products });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 exports.getProductById = async (req, res) => {
   try {
@@ -87,6 +99,7 @@ exports.getProductById = async (req, res) => {
     res.status(500).json({ message: 'Error retrieving product' });
   }
 };
+
 exports.getDeletedProducts = async (req, res) => {
   try {
     console.log("Fetching deleted products from database...");
@@ -98,8 +111,6 @@ exports.getDeletedProducts = async (req, res) => {
     res.status(500).json({ message: "Error retrieving deleted products" });
   }
 };
-
-
 
 exports.updateProduct = async (req, res) => {
   try {

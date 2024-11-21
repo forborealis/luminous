@@ -36,3 +36,10 @@ exports.isAuthenticatedUser = async (req, res, next) => {
     res.status(401).json({ success: false, message: 'Invalid token' });
   }
 };
+
+exports.isAdmin = async (req, res, next) => {
+  if (req.user.role !== 'Admin') {
+    return res.status(403).json({ success: false, message: 'Access denied. Admins only.' });
+  }
+  next();
+};

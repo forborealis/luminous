@@ -6,67 +6,84 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const admin = require('firebase-admin');
+
 
 exports.registerUser = async (req, res) => {
   try {
-    const { firebaseUID, name, username, email, contactNumber, address, avatar } = req.body;
+    const { firebaseUID, name, username, email, contactNumber, address, avatar, status } = req.body;
 
-    // Ensure avatar is present
-    if (!avatar) {
-      return res.status(400).json({ success: false, message: 'No avatar uploaded' });
+    // Check if user already exists
+    let user = await User.findOne({ firebaseUID });
+    if (user) {
+      return res.status(400).json({ success: false, message: 'User already exists' });
     }
 
-    // Upload avatar to Cloudinary
-    const result = await cloudinary.uploader.upload(avatar, {
-      folder: 'avatars',
-      width: 150,
-      crop: 'scale',
-    });
+    // Upload avatar to Cloudinary if provided
+    let avatarUrl = '';
+    let avatarPublicId = '';
+    if (avatar) {
+      const result = await cloudinary.uploader.upload(avatar, {
+        folder: 'avatars',
+        width: 150,
+        crop: 'scale',
+      });
+      avatarUrl = result.secure_url;
+      avatarPublicId = result.public_id;
+    }
 
-    // Create the user in MongoDB with the firebaseUID field included
-    const user = await User.create({
-      firebaseUID, // Ensure firebaseUID is saved here
+    // Create new user
+    user = new User({
+      firebaseUID,
       name,
       username,
       email,
-      contactNumber,
-      address,
+      contactNumber: contactNumber || 'N/A', // Provide default value if not available
+      address: address || 'N/A', // Provide default value if not available
       avatar: {
-        public_id: result.public_id,
-        url: result.secure_url,
+        public_id: avatarPublicId,
+        url: avatarUrl,
       },
-      status: 'Pending',
+      status: status || 'Pending', // Set status to Verified for Google Sign-Up, otherwise Pending
     });
 
-    // Generate verification token
-    const verificationToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '1h',
+    await user.save();
+
+    // Generate JWT token
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRES_TIME,
     });
 
-    // Send verification email
-    const verificationUrl = `${req.protocol}://${req.get('host')}/api/v1/verify-email?token=${verificationToken}`;
-    const message = `
-      <div>Good day, ${name}! Please verify your email: <a href="${verificationUrl}">Verify</a></div>
-    `;
+    // If the status is not Verified (i.e., not Google Sign-Up), send verification email
+    if (status !== 'Verified') {
+      // Generate verification token
+      const verificationToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+        expiresIn: '1h',
+      });
 
-    await sendEmail({
-      email: user.email,
-      subject: 'Email Verification',
-      html: message,
-    });
+      // Send verification email
+      const verificationUrl = `${req.protocol}://${req.get('host')}/api/v1/verify-email?token=${verificationToken}`;
+      const message = `
+        <div>Good day, ${name}! Please verify your email: <a href="${verificationUrl}">Verify</a></div>
+      `;
+      await sendEmail({
+        email: user.email,
+        subject: 'Email Verification',
+        html: message,
+      });
+    }
 
     return res.status(201).json({
       success: true,
       message: 'User registered successfully. Please check your email to verify your account.',
+      token, // Send the token in the response
     });
   } catch (error) {
     console.error('Error in registerUser:', error);
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
-
-
-exports.verifyEmail = async (req, res) => {
+  exports.verifyEmail = async (req, res) => {
     try {
       const { token } = req.query;
   
@@ -97,39 +114,77 @@ exports.verifyEmail = async (req, res) => {
 
   exports.loginUser = async (req, res) => {
     try {
-        const { firebaseUID } = req.body;
-
-        if (!firebaseUID) {
-            return res.status(400).json({ success: false, message: 'Firebase UID is required.' });
-        }
-
-        console.log("Received Firebase UID:", firebaseUID); // Debugging line
-
-        // Check if user exists in MongoDB by Firebase UID
-        const user = await User.findOne({ firebaseUID: firebaseUID.trim() }); // Ensure no leading/trailing spaces
-
-        if (!user) {
-            console.log("User not found for Firebase UID:", firebaseUID); // Debugging line
-            return res.status(401).json({ success: false, message: 'User not found' });
-        }
-
-        if (user.status !== 'Verified') {
-            console.log("User is not verified:", firebaseUID); // Debugging line
-            return res.status(401).json({ success: false, message: 'Your account is not verified' });
-        }
-
-        // Generate JWT token
-        const token = user.getJwtToken();
-        console.log("Generated JWT token:", token); // Debugging line
-
-        // Return token to client
-        res.status(200).json({ success: true, token });
-    } catch (error) {
-        console.error('Error in loginUser:', error);
-        res.status(500).json({ success: false, message: 'Server Error' });
-    }
-};
+      const { email, password } = req.body;
   
+      // Validate email and password
+      if (!email || !password) {
+        return res.status(400).json({ success: false, message: 'Email and password are required.' });
+      }
+  
+      console.log('Login attempt for email:', email);
+  
+      // Check Firebase authentication
+      const userRecord = await admin.auth().getUserByEmail(email).catch(() => null);
+  
+      if (!userRecord) {
+        console.error('User not found in Firebase.');
+        return res.status(404).json({ success: false, message: 'Invalid email or password.' });
+      }
+  
+      const firebaseUID = userRecord.uid;
+  
+      // Check if the user exists in MongoDB
+      let user = await User.findOne({ firebaseUID });
+  
+      // Create a new user in MongoDB if not found
+      if (!user) {
+        console.log('User not found in MongoDB. Creating a new user...');
+  
+        const avatarUrl = userRecord.photoURL || 'default_avatar_url';
+  
+        user = new User({
+          firebaseUID,
+          email: userRecord.email,
+          username: userRecord.displayName || 'Default Username',
+          name: userRecord.displayName || 'User',
+          contactNumber: 'N/A',
+          address: 'N/A',
+          avatar: {
+            public_id: 'default_public_id',
+            url: avatarUrl,
+          },
+          status: 'Verified',
+          role: 'user',
+        });
+  
+        await user.save();
+        console.log('New user created in MongoDB:', user);
+      }
+  
+      // Check if the user is verified
+      if (user.status !== 'Verified') {
+        console.error('User is not verified:', firebaseUID);
+        return res.status(401).json({ success: false, message: 'Your account is not verified.' });
+      }
+  
+      // Generate JWT token
+      const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
+        expiresIn: process.env.JWT_EXPIRES_TIME,
+      });
+  
+      console.log(`JWT token generated for ${user.role}:`, token);
+  
+      // Return the token and role to the client
+      res.status(200).json({
+        success: true,
+        token,
+        role: user.role,
+      });
+    } catch (error) {
+      console.error('Error in loginUser:', error);
+      res.status(500).json({ success: false, message: 'Server Error' });
+    }
+  };
   
 
 exports.getUserProfile = async (req, res) => {
@@ -201,39 +256,23 @@ exports.getUserProfile = async (req, res) => {
 
 exports.updateUserPassword = async (req, res) => {
   try {
-    const userId = req.user.id; 
-    const { currentPassword, newPassword } = req.body;
+    const { firebaseUID, newPassword } = req.body;
 
-    console.log('User ID:', userId); 
-    console.log('Request Body:', req.body); 
+    if (!firebaseUID || !newPassword) {
+      return res.status(400).json({ success: false, message: 'Firebase UID and new password are required.' });
+    }
 
-    const user = await User.findById(userId).select('+password');
+    // Find the user by Firebase UID
+    const user = await User.findOne({ firebaseUID: firebaseUID.trim() });
 
     if (!user) {
-      console.error('User not found'); 
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    const isMatch = await bcrypt.compare(currentPassword, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ success: false, message: 'Current password is incorrect' });
-    }
 
-    user.password = newPassword;
-    await user.save();
-
-    // End the session if using sessions
-    if (req.session) {
-      req.session.destroy((err) => {
-        if (err) {
-          console.error('Error ending session:', err);
-        }
-      });
-    }
-
-    res.json({ success: true, message: 'Password updated successfully' });
+    res.status(200).json({ success: true, message: 'Password updated successfully' });
   } catch (error) {
-    console.error('Error updating password:', error);
+    console.error('Error updating user password:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };

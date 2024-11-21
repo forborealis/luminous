@@ -2,11 +2,13 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import Nav from "./components/client/Nav";
 import LoggedInNav from "./components/client/LoggedInNav";
+// import 'react-toastify/dist/ReactToastify.css';
 import {
   Footer,
   Hero
 } from "./sections/client";
 import ProtectedRoute from './components/ProtectedRoute';
+import ProtectedAdminRoute from './components/ProtectedAdminRoute';
 import Home from "./components/client/Home";
 import Login from "./components/client/Login";
 import Signup from "./components/client/Signup";
@@ -28,7 +30,7 @@ import Checkout from './components/client/Checkout';
 import Order from './components/client/Order';
 
 const App = () => {
-  const [loggedIn, setLoggedIn] = useState(!!localStorage.getItem("token"));
+  const [loggedIn, setLoggedIn] = useState(!!localStorage.getItem( "token"));
 
   useEffect(() => {
     const updateLoginState = () => setLoggedIn(!!localStorage.getItem("token"));
@@ -45,8 +47,8 @@ const App = () => {
       <div>
         <ToastContainer /> 
         <Routes>
-          <Route path="/admin/*" element={<Dashboard />} /> 
-          <Route path="*" element={
+        <Route path="/admin/*" element={<ProtectedAdminRoute><Dashboard /></ProtectedAdminRoute>} />
+                  <Route path="*" element={
             <>
               {loggedIn ? <LoggedInNav /> : <Nav />}
               <main className="relative">

@@ -15,6 +15,9 @@ router.put('/products/:id', upload.array('images', 4), productController.updateP
 router.put('/products/:id/soft-delete', productController.softDeleteProduct);
 router.put('/products/:id/restore', productController.restoreProduct);
 router.delete('/products/:id', productController.permanentDeleteProduct);
+
+
+router.get('/products/infinite-scroll', productController.getProductsForInfiniteScroll);
 router.get('/products/:id', productController.getProductById);  // This should be last among these routes
 
 module.exports = router;

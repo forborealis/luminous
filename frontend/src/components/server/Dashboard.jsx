@@ -10,6 +10,7 @@ import UpdateProduct from './Products/UpdateProduct';
 import ProductDelete from './Products/ProductDelete';
 import ProtectedAdminRoute from '../ProtectedAdminRoute'; // Import the ProtectedAdminRoute component
 import { ToastContainer } from 'react-toastify'; // Import ToastContainer
+import Chart from './Chart'; 
 
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -56,6 +57,7 @@ const Dashboard = () => {
           <Route path="/products/create" element={<ProtectedAdminRoute><CreateProduct /></ProtectedAdminRoute>} />
           <Route path="/products/update/:id" element={<ProtectedAdminRoute><UpdateProduct /></ProtectedAdminRoute>} />
           <Route path="/products/trash" element={<ProtectedAdminRoute><ProductDelete /></ProtectedAdminRoute>} />
+          <Route path="/chart" element={<ProtectedAdminRoute><Chart /></ProtectedAdminRoute>} />
         </Routes>
         <ToastContainer /> {/* Add ToastContainer to display toasts */}
       </Box>

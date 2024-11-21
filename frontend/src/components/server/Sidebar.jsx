@@ -37,7 +37,7 @@ const Sidebar = () => {
       </Box>
       <Divider sx={{ backgroundColor: 'white', width: isExpanded ? '80%' : '100%', margin: '0 auto' }} />
       <List>
-        <Item title="Dashboard" path="/admin/dashboard" icon={<DashboardOutlined />} isExpanded={isExpanded} />
+        <Item title="Dashboard" path="/admin/chart" icon={<DashboardOutlined />} isExpanded={isExpanded} />
         <Item title="Products" path="/admin/products" icon={<StorefrontOutlined />} isExpanded={isExpanded} />
         <Item title="Users" path="/admin/users" icon={<PeopleAltOutlined />} isExpanded={isExpanded} />
         <Item title="Orders" path="/admin/Order" icon={<PeopleAltOutlined />} isExpanded={isExpanded} />

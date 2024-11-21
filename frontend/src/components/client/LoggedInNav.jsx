@@ -3,12 +3,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { hamburger } from "../../assets/icons";
 import { headerLogo } from "../../assets/images";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSignOutAlt, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
+import { faSignOutAlt, faShoppingCart, faSearch, faUser } from '@fortawesome/free-solid-svg-icons';
 
 const LoggedInNav = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
   const handleSignOut = () => {
@@ -28,6 +29,12 @@ const LoggedInNav = () => {
     } else {
       setIsScrolled(false);
     }
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    navigate(`/shopping?search=${searchQuery}`);
+    setSearchQuery(''); // Clear the search bar text after a successful search
   };
 
   useEffect(() => {
@@ -57,8 +64,8 @@ const LoggedInNav = () => {
         <Link to="/shop" className="text-2xl font-semibold">
           <img src={headerLogo} alt="logo" className="w-32" />
         </Link>
-        <ul className="hidden space-x-6 lg:flex">
-        <li>
+        <ul className="hidden space-x-6 lg:flex justify-center flex-1">
+          <li>
             <Link
               to="/shop"
               className="hover:text-coral-red transition duration-300"
@@ -83,7 +90,19 @@ const LoggedInNav = () => {
             </Link>
           </li>
         </ul>
-        <div className="flex space-x-4 items-center relative">
+        <div className="flex space-x-4 items-center relative ml-auto">
+          <form onSubmit={handleSearch} className="hidden lg:flex items-center">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search..."
+              className="px-4 py-1 rounded-md text-black"
+            />
+            <button type="submit" className="ml-2 text-white hover:text-coral-red transition duration-300">
+              <FontAwesomeIcon icon={faSearch} />
+            </button>
+          </form>
           {isLoggedIn && (
             <>
               <div className="relative">
@@ -91,7 +110,7 @@ const LoggedInNav = () => {
                   className="cursor-pointer text-white hover:text-coral-red transition duration-300"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 >
-                  Profile
+                  <FontAwesomeIcon icon={faUser} />
                 </span>
                 {isDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-2 z-50">

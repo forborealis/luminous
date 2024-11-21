@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ShoppingCart } from '@mui/icons-material'; // MUI Shopping Cart icon
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Slider from 'rc-slider';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
 import 'rc-slider/assets/index.css';
+import { CircularProgress, Typography, Box } from '@mui/material';
 
 const Shopping = () => {
   const [products, setProducts] = useState([]);
@@ -19,6 +19,7 @@ const Shopping = () => {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [categories, setCategories] = useState([]);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -28,29 +29,39 @@ const Shopping = () => {
         const products = Array.isArray(response.data.products) ? response.data.products : [];
         setProducts(products);
         setFilteredProducts(products);
-        setLoading(false);
-  
+
         // Extract unique categories from products
         const uniqueCategories = [...new Set(products.map(product => product.category))];
         setCategories(uniqueCategories);
+
+        // Add a delay of 1 second before setting loading to false
+        setTimeout(() => {
+          setLoading(false);
+        }, 1000);
       } catch (error) {
         console.error('Error fetching products:', error);
         setError('Failed to fetch products');
         setLoading(false);
       }
     };
-  
+
     fetchProducts();
   }, []);
-  
+
   useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const searchQuery = searchParams.get('search') || '';
+
     const filtered = products.filter(product => {
       const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
       const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(product.category);
-      return matchesPrice && matchesCategory;
+      const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            product.price.toString().includes(searchQuery);
+      return matchesPrice && matchesCategory && matchesSearch;
     });
     setFilteredProducts(filtered);
-  }, [priceRange, products, selectedCategories]);
+  }, [priceRange, products, selectedCategories, location.search]);
 
   const handleImageClick = (productId) => {
     navigate(`/item-details/${productId}`);
@@ -67,6 +78,7 @@ const Shopping = () => {
     setMaxPrice(value);
     setPriceRange([priceRange[0], value]);
   };
+
   const handleAddToCart = async (product) => {
     try {
       const response = await axios.post(
@@ -80,8 +92,6 @@ const Shopping = () => {
       toast.error(error.response?.data?.message || 'Error adding to cart');
     }
   };
-  
-  
 
   const handleCategoryChange = (category) => {
     setSelectedCategories((prevSelectedCategories) =>
@@ -96,7 +106,14 @@ const Shopping = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <CircularProgress />
+        <Typography variant="h6" color="textSecondary" sx={{ ml: 2 }}>
+          Loading...
+        </Typography>
+      </Box>
+    );
   }
 
   if (error) {
@@ -187,14 +204,13 @@ const Shopping = () => {
                 <p className="text-sm text-gray-600 mb-3 truncate">{product.description}</p>
                 <p className="text-lg font-bold text-gray-900 mb-4">₱{product.price.toFixed(2)}</p>
                 <div className="flex justify-end">
-                <button
-  onClick={() => handleAddToCart(product)}
-  className="text-black-500 hover:text-coral-red transition duration-300"
-  aria-label="Add to Cart"
->
-        <ShoppingCart fontSize="medium" />
-            </button>
-
+                  <button
+                    onClick={() => handleAddToCart(product)}
+                    className="text-black-500 hover:text-coral-red transition duration-300"
+                    aria-label="Add to Cart"
+                  >
+                    <ShoppingCart fontSize="medium" />
+                  </button>
                 </div>
               </div>
             </div>

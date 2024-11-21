@@ -3,6 +3,22 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
+import {
+  Container,
+  Typography,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  IconButton,
+  CircularProgress,
+  Box,
+} from '@mui/material';
+import { Add, Remove, Delete } from '@mui/icons-material';
 
 const Cart = () => {
   const [cart, setCart] = useState([]);
@@ -63,87 +79,90 @@ const Cart = () => {
     fetchCart();
   }, []);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Your Cart</h1>
-        <button
-          onClick={goToOrders}
-          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-        >
+    <Container>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+        <Typography variant="h4" component="h1" fontWeight="bold" sx={{ fontFamily: 'Montserrat' }}>
+          Your Cart
+        </Typography>
+        <Button variant="contained" color="success" onClick={goToOrders} sx={{ fontFamily: 'Montserrat' }}>
           Go to Orders
-        </button>
-      </div>
+        </Button>
+      </Box>
       {cart.length === 0 ? (
-        <div>Your cart is currently empty.</div>
+        <Typography variant="h6" color="textSecondary" sx={{ fontFamily: 'Montserrat' }}>
+          Your cart is currently empty.
+        </Typography>
       ) : (
         <>
-          <table className="w-full border-collapse border border-gray-300">
-            <thead className="bg-gray-200">
-              <tr>
-                <th className="border border-gray-300 px-4 py-2">Image</th>
-                <th className="border border-gray-300 px-4 py-2">Name</th>
-                <th className="border border-gray-300 px-4 py-2">Price</th>
-                <th className="border border-gray-300 px-4 py-2">Quantity</th>
-                <th className="border border-gray-300 px-4 py-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {cart.map((item) => (
-                <tr key={item.product._id} className="text-center">
-                  <td className="border border-gray-300 px-4 py-2">
-                    <img
-                      src={item.product.images[0]}
-                      alt={item.product.name}
-                      className="w-16 h-16 object-cover mx-auto"
-                    />
-                  </td>
-                  <td className="border border-gray-300 px-4 py-2">{item.product.name}</td>
-                  <td className="border border-gray-300 px-4 py-2">₱{item.product.price.toFixed(2)}</td>
-                  <td className="border border-gray-300 px-4 py-2">
-                    <div className="flex items-center justify-center gap-2">
-                      <button
-                        onClick={() => updateQuantity(item.product._id, item.quantity - 1)}
-                        disabled={item.quantity <= 1}
-                        className="px-2 py-1 border rounded bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                      >
-                        -
-                      </button>
-                      <span>{item.quantity}</span>
-                      <button
-                        onClick={() => updateQuantity(item.product._id, item.quantity + 1)}
-                        disabled={item.quantity >= item.product.stock}
-                        className="px-2 py-1 border rounded bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </td>
-                  <td className="border border-gray-300 px-4 py-2">
-                    <button
-                      onClick={() => removeFromCart(item.product._id)}
-                      className="text-red-500 hover:underline"
-                    >
-                      Remove
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <div className="mt-4 text-right">
-            <button
-              onClick={handleCheckout}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontFamily: 'Montserrat' }}>Image</TableCell>
+                  <TableCell sx={{ fontFamily: 'Montserrat' }}>Name</TableCell>
+                  <TableCell sx={{ fontFamily: 'Montserrat' }}>Price</TableCell>
+                  <TableCell sx={{ fontFamily: 'Montserrat' }}>Quantity</TableCell>
+                  <TableCell sx={{ fontFamily: 'Montserrat' }}>Total</TableCell>
+                  <TableCell sx={{ fontFamily: 'Montserrat' }}>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {cart.map((item) => (
+                  <TableRow key={item.product._id}>
+                    <TableCell sx={{ fontFamily: 'Montserrat' }}>
+                      <img
+                        src={item.product.images[0]}
+                        alt={item.product.name}
+                        style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                      />
+                    </TableCell>
+                    <TableCell sx={{ fontFamily: 'Montserrat' }}>{item.product.name}</TableCell>
+                    <TableCell sx={{ fontFamily: 'Montserrat' }}>₱{item.product.price.toFixed(2)}</TableCell>
+                    <TableCell sx={{ fontFamily: 'Montserrat' }}>
+                      <Box display="flex" alignItems="center">
+                        <IconButton
+                          onClick={() => updateQuantity(item.product._id, item.quantity - 1)}
+                          disabled={item.quantity <= 1}
+                        >
+                          <Remove />
+                        </IconButton>
+                        <Typography sx={{ fontFamily: 'Montserrat' }}>{item.quantity}</Typography>
+                        <IconButton
+                          onClick={() => updateQuantity(item.product._id, item.quantity + 1)}
+                          disabled={item.quantity >= item.product.stock}
+                        >
+                          <Add />
+                        </IconButton>
+                      </Box>
+                    </TableCell>
+                    <TableCell sx={{ fontFamily: 'Montserrat' }}>₱{(item.product.price * item.quantity).toFixed(2)}</TableCell>
+                    <TableCell sx={{ fontFamily: 'Montserrat' }}>
+                      <IconButton onClick={() => removeFromCart(item.product._id)} color="error">
+                        <Delete />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <Box display="flex" justifyContent="flex-end" mt={4}>
+            <Button variant="contained" color="primary" onClick={handleCheckout} sx={{ fontFamily: 'Montserrat' }}>
               Proceed to Checkout
-            </button>
-          </div>
+            </Button>
+          </Box>
         </>
       )}
-    </div>
+    </Container>
   );
 };
 

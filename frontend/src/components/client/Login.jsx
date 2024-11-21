@@ -45,23 +45,25 @@ const Login = () => {
         avatar: user.photoURL,
         status: 'Verified',
       };
-
+  
       const response = await axios.post('http://localhost:5000/api/v1/login', formData, {
         headers: { 'Content-Type': 'application/json' },
       });
-
+  
       if (response.data.success) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('role', response.data.role);
         localStorage.setItem('firebaseUID', user.uid); // Store Firebase UID
         toast.success('Google Login successful!');
         window.dispatchEvent(new Event('loginStateChange'));
-
+  
         if (response.data.role === 'Admin') {
           navigate('/admin/dashboard');
         } else {
           navigate(redirect || '/shop');
         }
+      } else {
+        setError(response.data.message);
       }
     } catch (error) {
       console.error('Error during Google Login:', error);
@@ -107,6 +109,8 @@ const Login = () => {
           navigate('/shop');
         }
         toast.success('Login successful!');
+      } else {
+        setError(response.data.message);
       }
     } catch (error) {
       console.error('Error during login:', error);

@@ -22,7 +22,7 @@ const Home = () => {
       const response = await axios.get(`http://localhost:5000/api/v1/products/infinite-scroll?page=${page}&limit=8`); 
       const newProducts = response.data.products;
       setProducts((prevProducts) => [...prevProducts, ...newProducts]);
-      setHasMore(newProducts.length === 8); // If less than 8 products are returned, there are no more products to load
+      setHasMore(newProducts.length === 8); 
       setLoading(false);
     } catch (error) {
       console.error('Error fetching products:', error);

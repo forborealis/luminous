@@ -136,11 +136,11 @@ exports.registerUser = async (req, res) => {
 
   exports.loginUser = async (req, res) => {
     try {
-      const { email, password } = req.body;
+      const { email, password, firebaseUID } = req.body;
   
       // Validate email and password
-      if (!email || !password) {
-        return res.status(400).json({ success: false, message: 'Email and password are required.' });
+      if (!email || (!password && !firebaseUID)) {
+        return res.status(400).json({ success: false, message: 'Email and password or Firebase UID are required.' });
       }
   
       console.log('Login attempt for email:', email);
@@ -153,10 +153,10 @@ exports.registerUser = async (req, res) => {
         return res.status(404).json({ success: false, message: 'Invalid email or password.' });
       }
   
-      const firebaseUID = userRecord.uid;
+      const uid = firebaseUID || userRecord.uid;
   
       // Check if the user exists in MongoDB
-      let user = await User.findOne({ firebaseUID });
+      let user = await User.findOne({ firebaseUID: uid });
   
       // Create a new user in MongoDB if not found
       if (!user) {
@@ -165,7 +165,7 @@ exports.registerUser = async (req, res) => {
         const avatarUrl = userRecord.photoURL || 'default_avatar_url';
   
         user = new User({
-          firebaseUID,
+          firebaseUID: uid,
           email: userRecord.email,
           username: userRecord.displayName || 'Default Username',
           name: userRecord.displayName || 'User',
@@ -185,7 +185,7 @@ exports.registerUser = async (req, res) => {
   
       // Check if the user is verified
       if (user.status !== 'Verified') {
-        console.error('User is not verified:', firebaseUID);
+        console.error('User is not verified:', uid);
         return res.status(401).json({ success: false, message: 'Your account is not verified.' });
       }
   
@@ -207,7 +207,6 @@ exports.registerUser = async (req, res) => {
       res.status(500).json({ success: false, message: 'Server Error' });
     }
   };
-  
 
 exports.getUserProfile = async (req, res) => {
   try {

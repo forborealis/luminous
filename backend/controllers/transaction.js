@@ -145,39 +145,109 @@ exports.checkout = async (req, res) => {
 
     // Prepare email content
     const productList = cart.items
-      .map(
-        (item) =>
-          `<li>${item.product.name} (Quantity: ${item.quantity}) - ₱${
-            item.product.price * item.quantity
-          }</li>`
-      )
-      .join('');
+    .map(
+      (item) =>
+        `<div class="item">
+          <p>${item.product.name} x ${item.quantity}: ₱${(item.product.price * item.quantity).toFixed(2)}</p>
+        </div>`
+    )
+    .join('');
 
     const emailHtml = `
-      <h1>Order Confirmation</h1>
-      <p>Your order has been placed successfully. Here are the details:</p>
-      <ul>
-        ${productList}
-      </ul>
-      <p>Subtotal: ₱${totalAmount.toFixed(2)}</p>
-      <p>Shipping Fee: ₱50.00</p>
-      <p>Total: ₱${(totalAmount + 50).toFixed(2)}</p>
-      <p>Status: <strong>Order Placed</strong></p>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Order Confirmation</title>
+      <style>
+        body {
+          font-family: 'Arial', sans-serif;
+          background-color: #f4f4f4;
+          margin: 0;
+          padding: 0;
+        }
+        .container {
+          max-width: 600px;
+          margin: 0 auto;
+          background-color: #ffffff;
+          padding: 20px;
+          border-radius: 8px;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+          text-align: center;
+          padding: 10px 0;
+          border-bottom: 1px solid #dddddd;
+        }
+        .header h1 {
+          margin: 0;
+          color: #333333;
+        }
+        .content {
+          padding: 20px 0;
+        }
+        .content p {
+          margin: 10px 0;
+          color: #555555;
+        }
+        .content .item {
+          padding: 10px 0;
+          border-bottom: 1px solid #dddddd;
+        }
+        .content .item:last-child {
+          border-bottom: none;
+        }
+        .footer {
+          text-align: center;
+          padding: 10px 0;
+          border-top: 1px solid #dddddd;
+          color: #777777;
+        }
+        .totals {
+          text-align: right;
+          margin-top: 20px;
+        }
+        .totals p {
+          margin: 5px 0;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Order Confirmation</h1>
+        </div>
+        <div class="content">
+          <p>Your order has been placed successfully. Here are the details:</p>
+          ${productList}
+          <div class="totals">
+            <p><strong>Subtotal:</strong> ₱${totalAmount.toFixed(2)}</p>
+            <p><strong>Shipping Fee:</strong> ₱50.00</p>
+            <p><strong>Total:</strong> ₱${(totalAmount + 50).toFixed(2)}</p>
+          </div>
+        </div>
+        <div class="footer">
+          <p>Thank you for shopping with us!</p>
+        </div>
+      </div>
+    </body>
+    </html>
     `;
 
     // Send email to the user
     await sendEmail({
-      email: req.user.email, // Ensure the `req.user.email` is populated via authentication
-      subject: 'Order Confirmation - Luminous Cosmetics',
-      html: emailHtml,
+    email: req.user.email, 
+    subject: 'Order Confirmation - Luminous',
+    html: emailHtml,
     });
 
     res.status(200).json({ message: 'Order placed successfully', order });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error processing checkout' });
-  }
-};
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error processing checkout' });
+      }
+    };
 
 exports.getUserOrders = async (req, res) => {
   try {

@@ -58,12 +58,28 @@ const LoggedInNav = () => {
           <img src={headerLogo} alt="logo" className="w-32" />
         </Link>
         <ul className="hidden space-x-6 lg:flex">
+        <li>
+            <Link
+              to="/shop"
+              className="hover:text-coral-red transition duration-300"
+            >
+              Home
+            </Link>
+          </li>
           <li>
             <Link
               to="/shopping"
               className="hover:text-coral-red transition duration-300"
             >
               Products
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/order"
+              className="hover:text-coral-red transition duration-300"
+            >
+              My Orders
             </Link>
           </li>
         </ul>

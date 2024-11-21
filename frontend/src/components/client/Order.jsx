@@ -1,10 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import {
+  TableContainer,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Paper,
+  Box,
+  Pagination, 
+  CircularProgress,
+  Typography,
+} from '@mui/material';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState({}); // Track image index for each product
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
   const fetchOrders = async () => {
     try {
@@ -50,36 +65,60 @@ const Orders = () => {
     fetchOrders();
   }, []);
 
-  if (loading) return <div>Loading...</div>;
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+  };
+
+  // Flatten orders into individual items
+  const flattenedItems = orders.flatMap((order) =>
+    order.items.map((item) => ({
+      ...item,
+      orderStatus: order.status,
+    }))
+  );
+
+  const paginatedItems = flattenedItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <CircularProgress />
+        <Typography variant="h6" color="textSecondary" sx={{ ml: 2 }}>
+          Loading...
+        </Typography>
+      </Box>
+    );
+  }
+
   if (!orders.length) return <div>You have no orders.</div>;
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">My Orders</h1>
-      <table className="w-full border-collapse border border-gray-300">
-        <thead className="bg-gray-200">
-          <tr>
-            <th className="border border-gray-300 px-4 py-2">Image</th>
-            <th className="border border-gray-300 px-4 py-2">Name</th>
-            <th className="border border-gray-300 px-4 py-2">Quantity</th>
-            <th className="border border-gray-300 px-4 py-2">Price</th>
-            <th className="border border-gray-300 px-4 py-2">Subtotal</th>
-            <th className="border border-gray-300 px-4 py-2">Shipping Fee</th>
-            <th className="border border-gray-300 px-4 py-2">Total</th>
-            <th className="border border-gray-300 px-4 py-2">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {orders.map((order) =>
-            order.items.map((item) => {
+    <div className="container mx-auto p-4 font-montserrat">
+      <h1 className="text-3xl font-bold mb-4 text-center text-coral-red">Order History</h1>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ fontFamily: 'Montserrat' }}></TableCell>
+              <TableCell sx={{ fontFamily: 'Montserrat' }}>Product</TableCell>
+              <TableCell sx={{ fontFamily: 'Montserrat' }}>Quantity</TableCell>
+              <TableCell sx={{ fontFamily: 'Montserrat' }}>Price</TableCell>
+              <TableCell sx={{ fontFamily: 'Montserrat' }}>Subtotal</TableCell>
+              <TableCell sx={{ fontFamily: 'Montserrat' }}>Shipping Fee</TableCell>
+              <TableCell sx={{ fontFamily: 'Montserrat' }}>Total</TableCell>
+              <TableCell sx={{ fontFamily: 'Montserrat' }}>Status</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {paginatedItems.map((item) => {
               const subtotal = item.product.price * item.quantity;
               const total = subtotal + 50; // Including the shipping fee
               const productImages = item.product.images;
               const currentIndex = currentImageIndex[item.product._id] || 0;
 
               return (
-                <tr key={item.product._id}>
-                  <td className="border border-gray-300 px-4 py-2">
+                <TableRow key={item.product._id}>
+                  <TableCell sx={{ fontFamily: 'Montserrat' }}>
                     <div className="relative flex flex-col items-center">
                       <img
                         src={productImages[currentIndex]}
@@ -107,20 +146,28 @@ const Orders = () => {
                         </button>
                       </div>
                     </div>
-                  </td>
-                  <td className="border border-gray-300 px-4 py-2">{item.product.name}</td>
-                  <td className="border border-gray-300 px-4 py-2">{item.quantity}</td>
-                  <td className="border border-gray-300 px-4 py-2">₱{item.product.price.toFixed(2)}</td>
-                  <td className="border border-gray-300 px-4 py-2">₱{subtotal.toFixed(2)}</td>
-                  <td className="border border-gray-300 px-4 py-2">₱50.00</td>
-                  <td className="border border-gray-300 px-4 py-2">₱{total.toFixed(2)}</td>
-                  <td className="border border-gray-300 px-4 py-2">{order.status}</td>
-                </tr>
+                  </TableCell>
+                  <TableCell sx={{ fontFamily: 'Montserrat' }}>{item.product.name}</TableCell>
+                  <TableCell sx={{ fontFamily: 'Montserrat' }}>{item.quantity}</TableCell>
+                  <TableCell sx={{ fontFamily: 'Montserrat' }}>₱{item.product.price.toFixed(2)}</TableCell>
+                  <TableCell sx={{ fontFamily: 'Montserrat' }}>₱{subtotal.toFixed(2)}</TableCell>
+                  <TableCell sx={{ fontFamily: 'Montserrat' }}>₱50.00</TableCell>
+                  <TableCell sx={{ fontFamily: 'Montserrat' }}>₱{total.toFixed(2)}</TableCell>
+                  <TableCell sx={{ fontFamily: 'Montserrat' }}>{item.orderStatus}</TableCell>
+                </TableRow>
               );
-            })
-          )}
-        </tbody>
-      </table>
+            })}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <Box display="flex" justifyContent="center" mt={4}>
+        <Pagination
+          count={Math.ceil(flattenedItems.length / itemsPerPage)}
+          page={currentPage}
+          onChange={handlePageChange}
+          color="primary"
+        />
+      </Box>
     </div>
   );
 };

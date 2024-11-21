@@ -55,7 +55,7 @@ const App = () => {
                   <Route path="/signup" element={<Signup />} />
                   <Route path="/verify-email" element={<VerifyEmail />} /> 
                   <Route path="/forgot-password" element={<ForgotPassword />} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/reset-password/:token" element={<ResetPassword />} />
                   {/* Use ProtectedRoute as a wrapper */}
                   <Route path="/shop" element={
                     <ProtectedRoute>

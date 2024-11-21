@@ -78,6 +78,32 @@ exports.getProductsForInfiniteScroll = async (req, res) => {
   }
 };
 
+// Get products for search on client side
+exports.getProductsForSearch = async (req, res) => {
+  try {
+    const searchQuery = req.query.search || '';
+    const searchRegex = new RegExp(searchQuery, 'i');
+    const searchConditions = [
+      { name: { $regex: searchRegex } },
+      { category: { $regex: searchRegex } }
+    ];
+
+    // If the search query is a number, add a condition for price
+    if (!isNaN(searchQuery)) {
+      searchConditions.push({ price: Number(searchQuery) });
+    }
+
+    const products = await Product.find({
+      $or: searchConditions
+    });
+
+    res.json({ products });
+  } catch (error) {
+    console.error('Error fetching products for search:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 exports.getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);

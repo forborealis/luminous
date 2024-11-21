@@ -60,22 +60,43 @@ exports.registerUser = async (req, res) => {
         expiresIn: '1h',
       });
 
-      // Send verification email
-      const verificationUrl = `${req.protocol}://${req.get('host')}/api/v1/verify-email?token=${verificationToken}`;
-      const message = `
-        <div>Good day, ${name}! Please verify your email: <a href="${verificationUrl}">Verify</a></div>
-      `;
-      await sendEmail({
-        email: user.email,
-        subject: 'Email Verification',
-        html: message,
-      });
+     // Send verification email
+    const verificationUrl = `${req.protocol}://${req.get('host')}/api/v1/verify-email?token=${verificationToken}`;
+    const message = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Email Verification</title>
+        <style>
+          @import url('https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
+        </style>
+      </head>
+      <body class="bg-gray-100">
+        <div class="max-w-lg mx-auto mt-10 bg-white p-6 rounded-lg shadow-lg">
+          <h2 class="text-2xl font-bold text-center mb-4">Email Verification</h2>
+          <p class="text-gray-700 mb-4">
+            Good day, ${name}! To finish setting up your Luminous account, please verify your email first.
+          </p>
+          <div class="text-center">
+            <a href="${verificationUrl}" class="bg-blue-500 text-white px-4 py-2 rounded inline-block">Verify</a>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    await sendEmail({
+      email: user.email,
+      subject: 'Email Verification',
+      html: message,
+    });
     }
 
     return res.status(201).json({
       success: true,
       message: 'User registered successfully. Please check your email to verify your account.',
-      token, // Send the token in the response
+      token, 
     });
   } catch (error) {
     console.error('Error in registerUser:', error);

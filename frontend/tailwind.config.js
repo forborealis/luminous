@@ -24,7 +24,7 @@ export default {
         "dark-pink": "#FEA1BF",
         "light-pink": "#FFC6D3",
         "slate-gray": "#6D6D6D",
-        "pale-blue": "#F3A4F7A",
+        "pale-blue": "#3A4F7A",
         "white-400": "#EEEDEB",
         customColor: "#1E201E"
 

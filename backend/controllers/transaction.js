@@ -302,42 +302,51 @@ exports.getUserOrders = async (req, res) => {
 //   }
 // };
 
-exports.getSalesData = async (req, res) => {
-  try {
-    const { startDate, endDate } = req.query;
+  exports.getSalesData = async (req, res) => {
+    try {
+      const { startDate, endDate } = req.query;
 
-    // Ensure startDate and endDate are provided
-    if (!startDate || !endDate) {
-      return res.status(400).json({ message: 'Start date and end date are required' });
+      // Ensure startDate and endDate are provided
+      if (!startDate || !endDate) {
+        return res.status(400).json({ message: 'Start date and end date are required' });
+      }
+
+      // Query the database for orders within the specified date range and group by day
+      const orders = await Order.aggregate([
+        {
+          $match: {
+            createdAt: {
+              $gte: new Date(startDate),
+              $lte: new Date(endDate),
+            },
+          },
+        },
+        {
+          $group: {
+            _id: {
+              year: { $year: "$createdAt" },
+              month: { $month: "$createdAt" },
+              day: { $dayOfMonth: "$createdAt" },
+            },
+            totalSales: { $sum: "$totalAmount" },
+          },
+        },
+        {
+          $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 },
+        },
+      ]);
+
+      res.json({ sales: orders });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
     }
+  };
 
-    // Query the database for orders within the specified date range and group by day
-    const orders = await Order.aggregate([
-      {
-        $match: {
-          createdAt: {
-            $gte: new Date(startDate),
-            $lte: new Date(endDate),
-          },
-        },
-      },
-      {
-        $group: {
-          _id: {
-            year: { $year: "$createdAt" },
-            month: { $month: "$createdAt" },
-            day: { $dayOfMonth: "$createdAt" },
-          },
-          totalSales: { $sum: "$totalAmount" },
-        },
-      },
-      {
-        $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 },
-      },
-    ]);
-
-    res.json({ sales: orders });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+  exports.getTotalOrders = async (req, res) => {
+    try {
+      const totalOrders = await Order.countDocuments();
+      res.json({ total: totalOrders });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };

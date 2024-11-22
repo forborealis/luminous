@@ -26,6 +26,9 @@ const Chart = () => {
   const [startDate, setStartDate] = useState(new Date(new Date().getFullYear(), 0, 1)); // Start of the year
   const [endDate, setEndDate] = useState(new Date()); // Current date
   const [salesData, setSalesData] = useState([]);
+  const [totalVerifiedUsers, setTotalVerifiedUsers] = useState(0);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [totalProducts, setTotalProducts] = useState(0);
 
   useEffect(() => {
     const fetchSalesData = async () => {
@@ -42,7 +45,31 @@ const Chart = () => {
       }
     };
 
+    const fetchSummaryData = async () => {
+      try {
+        const token = localStorage.getItem('token'); // Get the token from localStorage
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+
+        const [usersResponse, ordersResponse, productsResponse] = await Promise.all([
+          axios.get('http://localhost:5000/api/v1/users/verified', config),
+          axios.get('http://localhost:5000/api/v1/orders', config),
+          axios.get('http://localhost:5000/api/v1/products', config),
+        ]);
+
+        setTotalVerifiedUsers(usersResponse.data.total);
+        setTotalOrders(ordersResponse.data.total);
+        setTotalProducts(productsResponse.data.total);
+      } catch (error) {
+        console.error('Error fetching summary data:', error);
+      }
+    };
+
     fetchSalesData();
+    fetchSummaryData();
   }, [startDate, endDate]);
 
   const totalSales = salesData.reduce((sum, sale) => sum + sale.totalSales, 0);
@@ -109,6 +136,20 @@ const Chart = () => {
 
   return (
     <div className="container mx-auto p-4 font-montserrat">
+      <div className="flex justify-between mb-6">
+        <div className="bg-white p-4 rounded-lg shadow-md w-1/3 text-center">
+          <h3 className="text-lg font-semibold">Verified Users</h3>
+          <p className="text-2xl">{totalVerifiedUsers}</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-md w-1/3 text-center">
+          <h3 className="text-lg font-semibold">Total Orders</h3>
+          <p className="text-2xl">{totalOrders}</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-md w-1/3 text-center">
+          <h3 className="text-lg font-semibold">Total Products</h3>
+          <p className="text-2xl">{totalProducts}</p>
+        </div>
+      </div>
       <div className="bg-white p-6 rounded-lg shadow-md relative">
         <div className="absolute top-4 right-4 flex items-center space-x-2">
           <DatePicker

@@ -8,6 +8,7 @@ const {
   removeFromCart,
   checkout,
   getUserOrders,
+  getTotalOrders,
 //   updateOrderStatus,
 } = require('../controllers/transaction');
 
@@ -26,5 +27,6 @@ router.get('/orders', isAuthenticatedUser, getUserOrders);
 // OrderTable route
 // router.put('/orders/status', isAuthenticatedUser, updateOrderStatus);
 
+router.get('/orders', getTotalOrders);
 
 module.exports = router;

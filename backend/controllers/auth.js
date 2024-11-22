@@ -410,3 +410,12 @@ exports.resetPassword = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
+exports.getTotalVerifiedUsers = async (req, res) => {
+  try {
+    const totalVerifiedUsers = await User.countDocuments({ status: 'Verified' });
+    res.json({ total: totalVerifiedUsers });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

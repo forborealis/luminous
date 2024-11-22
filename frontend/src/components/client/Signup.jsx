@@ -11,6 +11,7 @@ import { signInWithPopup } from 'firebase/auth';
 import GoogleIcon from '@mui/icons-material/Google'; // Import Google Icon
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
+import signupImage from '../../assets/images/signup-image.jpg'; // Replace with your image path
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -99,129 +100,119 @@ const Signup = () => {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 font-montserrat">
-      <div className="bg-white p-8 rounded shadow-md w-full max-w-4xl">
-        <h2 className="text-2xl font-semibold mb-6 font-montserrat text-center">Sign Up</h2>
-        <Formik
-          initialValues={{
-            email: '',
-            username: '',
-            name: '',
-            contactNumber: '',
-            address: '',
-            password: '',
-          }}
-          validationSchema={validationSchema}
-          onSubmit={handleSubmit}
-        >
-          {({ isSubmitting }) => (
-            <Form className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <div className="mb-4">
-                  <label className="block text-gray-700 mb-2 font-montserrat" htmlFor="email">
-                    Email
-                  </label>
-                  <Field
-                    type="email"
-                    id="email"
-                    name="email"
-                    className="w-full px-3 py-2 border rounded font-montserrat"
-                  />
-                  <ErrorMessage name="email" component="div" className="text-red-500 text-sm mt-1" />
+      <div className="bg-white rounded-lg shadow-lg flex w-full max-w-6xl">
+        <div className="w-1/2 hidden md:block">
+          <img src={signupImage} alt="Signup" className="w-full h-full object-cover rounded-l-lg" />
+        </div>
+        <div className="w-full md:w-1/2 p-8 mt-10"> {/* Added mt-10 to bring the contents lower */}
+          <h2 className="text-2xl font-semibold mb-6 text-center">Welcome!</h2>
+          <Formik
+            initialValues={{
+              email: '',
+              username: '',
+              name: '',
+              contactNumber: '',
+              address: '',
+              password: '',
+            }}
+            validationSchema={validationSchema}
+            onSubmit={handleSubmit}
+          >
+            {({ isSubmitting }) => (
+              <Form className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <div className="mb-4">
+                    <Field
+                      type="email"
+                      id="email"
+                      name="email"
+                      placeholder="Email"
+                      className="w-full px-3 py-2 border rounded font-montserrat"
+                    />
+                    <ErrorMessage name="email" component="div" className="text-red-500 text-sm mt-1" />
+                  </div>
+                  <div className="mb-4">
+                    <Field
+                      type="text"
+                      id="username"
+                      name="username"
+                      placeholder="Username"
+                      className="w-full px-3 py-2 border rounded font-montserrat"
+                    />
+                    <ErrorMessage name="username" component="div" className="text-red-500 text-sm mt-1" />
+                  </div>
+                  <div className="mb-4">
+                    <Field
+                      type="text"
+                      id="name"
+                      name="name"
+                      placeholder="Name"
+                      className="w-full px-3 py-2 border rounded font-montserrat"
+                    />
+                    <ErrorMessage name="name" component="div" className="text-red-500 text-sm mt-1" />
+                  </div>
+                  <div className="mb-4">
+                    <Field
+                      type="text"
+                      id="contactNumber"
+                      name="contactNumber"
+                      placeholder="Contact Number"
+                      className="w-full px-3 py-2 border rounded font-montserrat"
+                    />
+                    <ErrorMessage name="contactNumber" component="div" className="text-red-500 text-sm mt-1" />
+                  </div>
                 </div>
-                <div className="mb-4">
-                  <label className="block text-gray-700 mb-2 font-montserrat" htmlFor="username">
-                    Username
-                  </label>
-                  <Field
-                    type="text"
-                    id="username"
-                    name="username"
-                    className="w-full px-3 py-2 border rounded font-montserrat"
-                  />
-                  <ErrorMessage name="username" component="div" className="text-red-500 text-sm mt-1" />
+                <div>
+                  <div className="mb-4">
+                    <Field
+                      type="text"
+                      id="address"
+                      name="address"
+                      placeholder="Address"
+                      className="w-full px-3 py-2 border rounded font-montserrat"
+                    />
+                    <ErrorMessage name="address" component="div" className="text-red-500 text-sm mt-1" />
+                  </div>
+                  <div className="mb-4">
+                    <Field
+                      type="password"
+                      id="password"
+                      name="password"
+                      placeholder="Password"
+                      className="w-full px-3 py-2 border rounded font-montserrat"
+                    />
+                    <ErrorMessage name="password" component="div" className="text-red-500 text-sm mt-1" />
+                  </div>
+                  <div className="mb-6">
+                    <AvatarEditorComponent ref={avatarEditorRef} />
+                  </div>
                 </div>
-                <div className="mb-4">
-                  <label className="block text-gray-700 mb-2 font-montserrat" htmlFor="name">
-                    Name
-                  </label>
-                  <Field
-                    type="text"
-                    id="name"
-                    name="name"
-                    className="w-full px-3 py-2 border rounded font-montserrat"
-                  />
-                  <ErrorMessage name="name" component="div" className="text-red-500 text-sm mt-1" />
+                <div className="col-span-1 md:col-span-2 flex flex-col items-center">
+                  {error && <p className="text-red-500 mb-4 font-montserrat">{error}</p>}
+                  <button
+                    type="submit"
+                    className="w-3/4 bg-dark-pink text-white py-2 rounded hover:bg-coral-red font-montserrat"
+                    disabled={isSubmitting}
+                  >
+                    Sign Up
+                  </button>
+                  <button
+                    onClick={handleGoogleSignUp}
+                    className="w-3/4 bg-pale-blue text-white py-2 rounded mt-4 hover:bg-pale-blue font-montserrat flex items-center justify-center"
+                  >
+                    <GoogleIcon className="mr-2" /> Google
+                  </button>
+                  <p className="mt-4 text-center font-montserrat">
+                    Already have an account?{' '}
+                    <Link to="/login" className="text-coral-red hover:underline">
+                      Sign In
+                    </Link>
+                  </p>
                 </div>
-                <div className="mb-4">
-                  <label className="block text-gray-700 mb-2 font-montserrat" htmlFor="contactNumber">
-                    Contact Number
-                  </label>
-                  <Field
-                    type="text"
-                    id="contactNumber"
-                    name="contactNumber"
-                    className="w-full px-3 py-2 border rounded font-montserrat"
-                  />
-                  <ErrorMessage name="contactNumber" component="div" className="text-red-500 text-sm mt-1" />
-                </div>
-              </div>
-              <div>
-                <div className="mb-4">
-                  <label className="block text-gray-700 mb-2 font-montserrat" htmlFor="address">
-                    Address
-                  </label>
-                  <Field
-                    type="text"
-                    id="address"
-                    name="address"
-                    className="w-full px-3 py-2 border rounded font-montserrat"
-                  />
-                  <ErrorMessage name="address" component="div" className="text-red-500 text-sm mt-1" />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-gray-700 mb-2 font-montserrat" htmlFor="password">
-                    Password
-                  </label>
-                  <Field
-                    type="password"
-                    id="password"
-                    name="password"
-                    className="w-full px-3 py-2 border rounded font-montserrat"
-                  />
-                  <ErrorMessage name="password" component="div" className="text-red-500 text-sm mt-1" />
-                </div>
-                <div className="mb-6">
-                  <label className="block text-gray-700 mb-2 font-montserrat" htmlFor="avatar">
-                    Upload Avatar
-                  </label>
-                  <AvatarEditorComponent ref={avatarEditorRef} />
-                </div>
-              </div>
-              <div className="col-span-1 md:col-span-2 flex flex-col items-center">
-                {error && <p className="text-red-500 mb-4 font-montserrat">{error}</p>}
-                <button
-                  type="submit"
-                  className="w-2/4 bg-coral-red text-white py-2 rounded hover:bg-coral-red-dark font-montserrat"
-                  disabled={isSubmitting}
-                >
-                  Sign Up
-                </button>
-                <button
-                  onClick={handleGoogleSignUp}
-                  className="w-2/4 bg-blue-500 text-white py-2 rounded mt-4 hover:bg-blue-600 font-montserrat flex items-center justify-center"
-                >
-                  <GoogleIcon className="mr-2" /> Google
-                </button>
-                <p className="mt-4 text-center font-montserrat">
-                  Already have an account?{' '}
-                  <Link to="/login" className="text-coral-red hover:underline">
-                    Sign In
-                  </Link>
-                </p>
-              </div>
-            </Form>
-          )}
-        </Formik>
+              </Form>
+            )}
+          </Formik>
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { registerUser, verifyEmail, loginUser, getUserProfile, updateUserProfile, updateUserPassword, forgotPassword, resetPassword } = require('../controllers/auth');
+const { registerUser, verifyEmail, loginUser, getUserProfile, updateUserProfile, updateUserPassword, forgotPassword, resetPassword, getTotalVerifiedUsers } = require('../controllers/auth');
 const { isAuthenticatedUser } = require('../middleware/auth');
 
 router.post('/register', registerUser);
@@ -11,6 +11,7 @@ router.post('/reset-password', resetPassword);
 router.get('/user', isAuthenticatedUser, getUserProfile);
 router.put('/user', isAuthenticatedUser, updateUserProfile); 
 router.put('/user/password', isAuthenticatedUser, updateUserPassword);
+router.get('/users/verified', getTotalVerifiedUsers);
 router.get('/shop', isAuthenticatedUser, (req, res) => {
   res.status(200).json({ success: true, message: 'Access granted' });
 }); // Protected /shop route

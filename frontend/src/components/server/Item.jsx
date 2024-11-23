@@ -6,7 +6,7 @@ const Item = ({ title, path, icon, isExpanded }) => {
   const location = useLocation();
   return (
     <ListItem
-      button
+      button // Ensure the button attribute is correctly handled
       component={Link}
       to={path}
       selected={location.pathname === path}

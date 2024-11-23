@@ -79,6 +79,10 @@ const Cart = () => {
     fetchCart();
   }, []);
 
+  const calculateSubtotal = () => {
+    return cart.reduce((total, item) => total + item.product.price * item.quantity, 0).toFixed(2);
+  };
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
@@ -88,7 +92,7 @@ const Cart = () => {
   }
 
   return (
-    <Container>
+    <Container sx={{ mt: 8 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
         <Typography variant="h4" component="h1" fontWeight="bold" sx={{ fontFamily: 'Montserrat' }}>
           Your Cart
@@ -108,10 +112,10 @@ const Cart = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontFamily: 'Montserrat' }}>Image</TableCell>
-                  <TableCell sx={{ fontFamily: 'Montserrat' }}>Name</TableCell>
+                  <TableCell sx={{ fontFamily: 'Montserrat' }}>Product</TableCell>
+                  <TableCell sx={{ fontFamily: 'Montserrat' }}></TableCell>
                   <TableCell sx={{ fontFamily: 'Montserrat' }}>Price</TableCell>
-                  <TableCell sx={{ fontFamily: 'Montserrat' }}>Quantity</TableCell>
+                  <TableCell sx={{ fontFamily: 'Montserrat' }}></TableCell>
                   <TableCell sx={{ fontFamily: 'Montserrat' }}>Total</TableCell>
                   <TableCell sx={{ fontFamily: 'Montserrat' }}>Actions</TableCell>
                 </TableRow>
@@ -147,16 +151,25 @@ const Cart = () => {
                     </TableCell>
                     <TableCell sx={{ fontFamily: 'Montserrat' }}>₱{(item.product.price * item.quantity).toFixed(2)}</TableCell>
                     <TableCell sx={{ fontFamily: 'Montserrat' }}>
-                      <IconButton onClick={() => removeFromCart(item.product._id)} color="error">
+                      <IconButton onClick={() => removeFromCart(item.product._id)} color="disabled">
                         <Delete />
                       </IconButton>
                     </TableCell>
                   </TableRow>
                 ))}
+                <TableRow>
+                  <TableCell colSpan={4} sx={{ fontFamily: 'Montserrat', fontWeight: 'bold' }}>
+                    Subtotal
+                  </TableCell>
+                  <TableCell sx={{ fontFamily: 'Montserrat', fontWeight: 'bold' }}>
+                    ₱{calculateSubtotal()}
+                  </TableCell>
+                  <TableCell></TableCell>
+                </TableRow>
               </TableBody>
             </Table>
           </TableContainer>
-          <Box display="flex" justifyContent="flex-end" mt={4}>
+          <Box display="flex" justifyContent="flex-end" mt={4} sx={{ fontFamily: 'Montserrat' }}>
             <Button variant="contained" color="primary" onClick={handleCheckout} sx={{ fontFamily: 'Montserrat' }}>
               Proceed to Checkout
             </Button>

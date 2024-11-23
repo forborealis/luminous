@@ -13,6 +13,7 @@ import OrderTable from './Orders/OrderTable'; // Import the OrderTable component
 import OrderCancle from './Orders/OrderCancle'; // Import the OrderCancle component
 import OrderCompleted from './Orders/OrderCompleted'; // Import the OrderCompleted component
 import { ToastContainer } from 'react-toastify'; // Import ToastContainer
+import Chart from './Chart'; 
 
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -66,6 +67,7 @@ const Dashboard = () => {
           <Route path="/OrderCompleted" element={<ProtectedAdminRoute><OrderCompleted /></ProtectedAdminRoute>} />
 
 
+          <Route path="/chart" element={<ProtectedAdminRoute><Chart /></ProtectedAdminRoute>} />
         </Routes>
         <ToastContainer /> {/* Add ToastContainer to display toasts */}
       </Box>

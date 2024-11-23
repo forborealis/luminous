@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box, List, Divider, IconButton, Typography } from '@mui/material';
-import { DashboardOutlined, StorefrontOutlined, PeopleAltOutlined, ExpandLess, ExpandMore } from '@mui/icons-material';
+import { DashboardOutlined, StorefrontOutlined, PeopleAltOutlined, ExpandLess, ExpandMore, SellOutlined } from '@mui/icons-material';
+import SellIcon from '@mui/icons-material/Sell';
 import Item from './Item';
 import headerLogo from '../../assets/images/header-logo.svg'; 
 
@@ -37,10 +38,10 @@ const Sidebar = () => {
       </Box>
       <Divider sx={{ backgroundColor: 'white', width: isExpanded ? '80%' : '100%', margin: '0 auto' }} />
       <List>
-        <Item title="Dashboard" path="/admin/dashboard" icon={<DashboardOutlined />} isExpanded={isExpanded} />
+        <Item title="Dashboard" path="/admin/chart" icon={<DashboardOutlined />} isExpanded={isExpanded} />
         <Item title="Products" path="/admin/products" icon={<StorefrontOutlined />} isExpanded={isExpanded} />
         <Item title="Users" path="/admin/users" icon={<PeopleAltOutlined />} isExpanded={isExpanded} />
-        <Item title="Orders" path="/admin/Order" icon={<PeopleAltOutlined />} isExpanded={isExpanded} />
+        <Item title="Orders" path="/admin/Order" icon={<SellOutlined/>} isExpanded={isExpanded} />
       </List>
       <IconButton
         onClick={toggleSidebar}

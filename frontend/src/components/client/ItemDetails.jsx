@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import axios from "axios";
+import { CircularProgress, Typography, Box } from '@mui/material';
 
 const ItemDetails = () => {
   const { productId } = useParams();
@@ -14,8 +15,10 @@ const ItemDetails = () => {
     const fetchProduct = async () => {
       try {
         const response = await axios.get(`http://localhost:5000/api/v1/products/${productId}`);
-        setProduct(response.data.product); // Ensure this matches the response structure
-        setLoading(false);
+        setProduct(response.data.product); 
+        setTimeout(() => {
+          setLoading(false);
+        }, 500); 
       } catch (err) {
         setError(err);
         setLoading(false);
@@ -26,7 +29,14 @@ const ItemDetails = () => {
   }, [productId]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <CircularProgress />
+        <Typography variant="h6" color="textSecondary" sx={{ ml: 2 }}>
+          Loading...
+        </Typography>
+      </Box>
+    );
   }
 
   if (error) {

@@ -9,6 +9,7 @@ import { requestFCMToken } from "../../firebase/fcmFunction";
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import GoogleIcon from '@mui/icons-material/Google';
+import loginImage from '../../assets/images/login-image.jpg'; 
 
 const Login = () => {
   const [error, setError] = useState('');
@@ -46,18 +47,18 @@ const Login = () => {
         avatar: user.photoURL,
         status: 'Verified',
       };
-  
+
       const response = await axios.post('http://localhost:5000/api/v1/login', formData, {
         headers: { 'Content-Type': 'application/json' },
       });
-  
+
       if (response.data.success) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('role', response.data.role);
         localStorage.setItem('firebaseUID', user.uid); // Store Firebase UID
         toast.success('Google Login successful!');
         window.dispatchEvent(new Event('loginStateChange'));
-  
+
         if (response.data.role === 'Admin') {
           navigate('/admin/dashboard');
         } else {
@@ -136,7 +137,7 @@ const Login = () => {
   
         // Redirect user based on role
         if (response.data.role === 'Admin') {
-          navigate('/admin/dashboard');
+          navigate('/admin/chart');
         } else {
           navigate('/shop');
         }
@@ -163,70 +164,87 @@ const Login = () => {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 font-montserrat">
-      <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-semibold mb-6 font-montserrat text-center">Login</h2>
-        <Formik
-          initialValues={{ email: '', password: '' }}
-          validationSchema={validationSchema}
-          onSubmit={handleSubmit}
-        >
-          {({ isSubmitting }) => (
-            <Form>
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-2 font-montserrat" htmlFor="email">
-                  Email
-                </label>
-                <Field
-                  type="email"
-                  id="email"
-                  name="email"
-                  className="w-full px-3 py-2 border rounded font-montserrat"
-                />
-                <ErrorMessage name="email" component="div" className="text-red-500 font-montserrat" />
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-2 font-montserrat" htmlFor="password">
-                  Password
-                </label>
-                <Field
-                  type="password"
-                  id="password"
-                  name="password"
-                  className="w-full px-3 py-2 border rounded font-montserrat"
-                />
-                <ErrorMessage name="password" component="div" className="text-red-500 font-montserrat" />
-              </div>
-              {error && <p className="text-red-500 mb-4 font-montserrat">{error}</p>}
-              <button
-                type="submit"
-                className="w-full bg-coral-red text-white py-2 rounded hover:bg-coral-red-dark font-montserrat"
-                disabled={isSubmitting}
-              >
-                Login
-              </button>
-            </Form>
-          )}
-        </Formik>
-        <button
-          onClick={handleGoogleLogin}
-          className="w-full bg-blue-500 text-white py-2 rounded mt-3 hover:bg-blue-600 font-montserrat flex items-center justify-center"
-        >
-          <GoogleIcon className="mr-2" /> Google
-        </button>
-        <p className="mt-4 text-center font-montserrat">
-          Don't have an account?{' '}
-          <Link to="/signup" className="text-coral-red hover:underline">
-            Sign Up
-          </Link>
-        </p>
-        <p className="mt-2 text-center font-montserrat">
-          <Link to="/forgot-password" className="text-coral-red hover:underline">
-            Forgot Password?
-          </Link>
-        </p>
+      <div className="bg-white rounded-lg shadow-lg flex w-full max-w-4xl">
+        <div className="w-1/2 hidden md:block">
+          <img src={loginImage} alt="Login" className="w-full h-full object-cover rounded-l-lg" />
+        </div>
+        <div className="w-full md:w-1/2 p-8 flex flex-col justify-center">
+          <h2 className="text-2xl font-semibold mb-6 text-center">Welcome Back!</h2>
+          <Formik
+            initialValues={{ email: '', password: '' }}
+            validationSchema={validationSchema}
+            onSubmit={handleSubmit}
+          >
+            {({ isSubmitting }) => (
+              <Form>
+                <div className="mb-4">
+                  <Field
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="Email"
+                    className="w-full px-3 py-2 border rounded"
+                  />
+                  <ErrorMessage name="email" component="div" className="text-red-500" />
+                </div>
+                <div className="mb-4 relative">
+                  <Field
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Password"
+                    className="w-full px-3 py-2 border rounded"
+                  />
+                  <ErrorMessage name="password" component="div" className="text-red-500" />
+                </div>
+                <div className="flex justify-end mb-4">
+                  <Link to="/forgot-password" className="text-black text-sm">
+                    Forgot Password?
+                  </Link>
+                </div>
+                {error && <p className="text-red-500 mb-4">{error}</p>}
+                <button
+                  type="submit"
+                  className="w-full bg-dark-pink text-white py-2 rounded hover:bg-coral-red"
+                  disabled={isSubmitting}
+                >
+                  Login
+                </button>
+              </Form>
+            )}
+          </Formik>
+          <div className="mt-6">
+            <button
+              onClick={handleGoogleLogin}
+              className="w-full bg-pale-blue text-white py-2 rounded hover:bg-pale-blue flex items-center justify-center"
+            >
+              <GoogleIcon className="mr-2" /> Google
+            </button>
+            <p className="mt-4 text-center">
+              Don't have an account?{' '}
+              <Link to="/signup" className="text-coral-red hover:underline">
+                Sign Up
+              </Link>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
 export default Login;
+<div className="mt-6 flex justify-between">
+  <button
+    onClick={() => navigate('/completed-orders')}
+    className="w-1/2 bg-green-500 text-white py-2 rounded hover:bg-green-700 mr-2"
+  >
+    Completed Orders
+  </button>
+  <button
+    onClick={() => navigate('/cancel-order')}
+    className="w-1/2 bg-red-500 text-white py-2 rounded hover:bg-red-700 ml-2"
+  >
+    Cancel Order
+  </button>
+</div>

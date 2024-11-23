@@ -3,34 +3,22 @@ import { Link, useNavigate } from "react-router-dom";
 import { hamburger } from "../../assets/icons";
 import { headerLogo } from "../../assets/images";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSignOutAlt, faShoppingCart, faBell } from '@fortawesome/free-solid-svg-icons';
+import { faSignOutAlt, faShoppingCart, faSearch, faUser } from '@fortawesome/free-solid-svg-icons';
 
 const LoggedInNav = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
-  const [notifications, setNotifications] = useState(
-    JSON.parse(localStorage.getItem("notifications")) || [] // Retrieve notifications from local storage
-  );
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
   const handleSignOut = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    localStorage.removeItem("firebaseUID");
-    console.log("User logged out and tokens cleared.");
-    window.dispatchEvent(new Event('loginStateChange'));
+    window.dispatchEvent(new Event('loginStateChange')); 
     setIsLoggedIn(false);
     navigate("/login");
   };
 
-  const removeNotification = (id) => {
-    const updatedNotifications = notifications.filter((notification) => notification.id !== id);
-    setNotifications(updatedNotifications);
-    localStorage.setItem("notifications", JSON.stringify(updatedNotifications));
-  };
-  
   const handleCartClick = () => {
     navigate("/cart"); // Navigate to the cart page
   };
@@ -43,10 +31,10 @@ const LoggedInNav = () => {
     }
   };
 
-  const handleNewNotification = (notification) => {
-    const updatedNotifications = [notification, ...notifications];
-    setNotifications(updatedNotifications);
-    localStorage.setItem("notifications", JSON.stringify(updatedNotifications)); // Save notifications to local storage
+  const handleSearch = (e) => {
+    e.preventDefault();
+    navigate(`/shopping?search=${searchQuery}`);
+    setSearchQuery(''); // Clear the search bar text after a successful search
   };
 
   useEffect(() => {
@@ -68,17 +56,6 @@ const LoggedInNav = () => {
     };
   }, []);
 
-  // Mock function to simulate receiving a new notification
-  useEffect(() => {
-    const mockNotification = {
-      id: Date.now(),
-      title: "Order Status Updated",
-      message: "Your order #12345 has been shipped.",
-      timestamp: new Date().toLocaleString(),
-    };
-    setTimeout(() => handleNewNotification(mockNotification), 10000); // Simulate a notification after 10 seconds
-  }, []);
-
   return (
     <header
       className={`px-4 py-3 bg-customColor text-white sticky top-0 z-50 ${isScrolled ? "scrolled" : ""} font-montserrat`}
@@ -87,7 +64,15 @@ const LoggedInNav = () => {
         <Link to="/shop" className="text-2xl font-semibold">
           <img src={headerLogo} alt="logo" className="w-32" />
         </Link>
-        <ul className="hidden space-x-6 lg:flex">
+        <ul className="hidden space-x-6 lg:flex justify-center flex-1">
+          <li>
+            <Link
+              to="/shop"
+              className="hover:text-coral-red transition duration-300"
+            >
+              Home
+            </Link>
+          </li>
           <li>
             <Link
               to="/shopping"
@@ -96,28 +81,36 @@ const LoggedInNav = () => {
               Products
             </Link>
           </li>
+          <li>
+            <Link
+              to="/order"
+              className="hover:text-coral-red transition duration-300"
+            >
+              My Orders
+            </Link>
+          </li>
         </ul>
-        <div className="flex space-x-4 items-center relative">
+        <div className="flex space-x-4 items-center relative ml-auto">
+          <form onSubmit={handleSearch} className="hidden lg:flex items-center">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search..."
+              className="px-4 py-1 rounded-md text-black"
+            />
+            <button type="submit" className="ml-2 text-white hover:text-coral-red transition duration-300">
+              <FontAwesomeIcon icon={faSearch} />
+            </button>
+          </form>
           {isLoggedIn && (
             <>
-              <button
-                className="text-white hover:text-coral-red transition duration-300 relative"
-                onClick={() => setIsModalOpen(true)}
-              >
-                <FontAwesomeIcon icon={faBell} />
-                {notifications.length > 0 && (
-                  <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full px-1">
-                    {notifications.length}
-                  </span>
-                )}
-              </button>
-
               <div className="relative">
                 <span
                   className="cursor-pointer text-white hover:text-coral-red transition duration-300"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 >
-                  Profile
+                  <FontAwesomeIcon icon={faUser} />
                 </span>
                 {isDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-2 z-50">
@@ -160,46 +153,6 @@ const LoggedInNav = () => {
           </button>
         </div>
       </div>
-
-      {/* Notification Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white rounded-lg p-6 w-80 shadow-lg">
-            <h2 className="text-lg font-semibold mb-4">Notifications</h2>
-            <ul className="max-h-64 overflow-y-auto">
-  {notifications.length > 0 ? (
-    notifications.map((notification) => (
-      <li key={notification.id} className="mb-2">
-        <div className="flex justify-between items-center">
-          <div>
-            <strong>{notification.title}</strong>
-            <p className="text-sm">{notification.message}</p>
-            <p className="text-xs text-gray-500">{notification.timestamp}</p>
-          </div>
-          <button
-            className="text-red-500 text-sm"
-            onClick={() => removeNotification(notification.id)}
-          >
-            X
-          </button>
-        </div>
-      </li>
-    ))
-  ) : (
-    <li className="text-center text-gray-500">No notifications.</li>
-  )}
-</ul>
-            <div className="flex justify-end mt-4">
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="px-4 py-2 bg-coral-red text-white rounded hover:bg-coral-red-dark"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </header>
   );
 };

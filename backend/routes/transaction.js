@@ -10,6 +10,7 @@ const {
   getUserOrders,
   updateOrderStatus,
   getAllOrders,
+  getTotalOrders,
 } = require('../controllers/transaction');
 
 // Cart routes
@@ -23,6 +24,8 @@ router.post('/checkout', isAuthenticatedUser, checkout);
 
 // Orders route
 router.get('/orders', isAuthenticatedUser, getUserOrders);
+router.get('/orders', getTotalOrders);
+
 
 // OrderTable route
 router.put('/orders/status', isAuthenticatedUser, updateOrderStatus);

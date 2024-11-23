@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Checkout = () => {
   const [cartDetails, setCartDetails] = useState([]);
@@ -55,8 +57,8 @@ const Checkout = () => {
         {},
         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
       );
-      alert('Purchase completed!');
-      navigate('/orders'); // Navigate to the orders page
+      toast.success('Purchase completed!');
+      navigate('/order');
     } catch (error) {
       console.error('Checkout error:', error);
       alert('Failed to complete purchase');

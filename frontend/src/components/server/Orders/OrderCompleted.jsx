@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import the hook
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import MUIDataTable from 'mui-datatables';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Typography, ThemeProvider } from '@mui/material';
+import theme from './theme'; // Import the custom theme
 
 const OrderCompleted = () => {
   const [completedOrders, setCompletedOrders] = useState([]);
   const [expandedRows, setExpandedRows] = useState({});
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate(); // Initialize navigate
-
+  const navigate = useNavigate();
 
   // Fetch all completed orders
   const fetchCompletedOrders = async () => {
@@ -224,17 +224,23 @@ const OrderCompleted = () => {
   };
 
   return (
-    <Box>
-      <Button variant="contained" onClick={() => navigate('/admin/Order')}>
-        Back
-      </Button>
-      <MUIDataTable
-        title={'Completed Orders'}
-        data={flattenedOrders}
-        columns={columns}
-        options={options}
-      />
-    </Box>
+    <ThemeProvider theme={theme}>
+      <Box sx={{ padding: '20px' }}>
+        <Button
+          variant="contained"
+          onClick={() => navigate('/admin/Order')}
+          sx={{ marginBottom: '20px', fontFamily: 'Montserrat, sans-serif' }}
+        >
+          Back
+        </Button>
+        <MUIDataTable
+          title={'Completed Orders'}
+          data={flattenedOrders}
+          columns={columns}
+          options={options}
+        />
+      </Box>
+    </ThemeProvider>
   );
 };
 

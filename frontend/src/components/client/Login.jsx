@@ -39,6 +39,17 @@ const Login = () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
+
+      // Dynamically request a fresh FCM token
+      let fcmToken;
+      try {
+        fcmToken = await requestFCMToken();
+      } catch (error) {
+        console.error("Error generating FCM token:", error);
+        setError("Failed to generate FCM token. Please enable notifications.");
+        return;
+      }
+
       const formData = {
         firebaseUID: user.uid,
         email: user.email,
@@ -56,6 +67,27 @@ const Login = () => {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('role', response.data.role);
         localStorage.setItem('firebaseUID', user.uid); // Store Firebase UID
+
+        // Save the FCM token to the backend
+        try {
+          await axios.post(
+            'http://localhost:5000/api/v1/users/save-fcm-token',
+            {
+              firebaseUID: user.uid,
+              fcmToken,
+            },
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${response.data.token}`,  // Include the JWT token
+              },
+            }
+          );
+        } catch (saveTokenError) {
+          console.error("Failed to save FCM token:", saveTokenError);
+          toast.error("FCM token could not be saved. Notifications may not work.");
+        }
+
         toast.success('Google Login successful!');
         window.dispatchEvent(new Event('loginStateChange'));
 
@@ -152,9 +184,6 @@ const Login = () => {
     }
   };
   
-  
-  
-  
   useEffect(() => {
     if (location.state?.unauthorized) {
       toast.error('Unauthorized access.');
@@ -205,7 +234,7 @@ const Login = () => {
                 {error && <p className="text-red-500 mb-4">{error}</p>}
                 <button
                   type="submit"
-                  className="w-full bg-dark-pink text-white py-2 rounded hover:bg-coral-red"
+                  className="w-full bg-coral-red text-white py-2 rounded hover:bg-coral-red-dark"
                   disabled={isSubmitting}
                 >
                   Login
@@ -216,7 +245,7 @@ const Login = () => {
           <div className="mt-6">
             <button
               onClick={handleGoogleLogin}
-              className="w-full bg-pale-blue text-white py-2 rounded hover:bg-pale-blue flex items-center justify-center"
+              className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 flex items-center justify-center"
             >
               <GoogleIcon className="mr-2" /> Google
             </button>
@@ -234,17 +263,3 @@ const Login = () => {
 };
 
 export default Login;
-<div className="mt-6 flex justify-between">
-  <button
-    onClick={() => navigate('/completed-orders')}
-    className="w-1/2 bg-green-500 text-white py-2 rounded hover:bg-green-700 mr-2"
-  >
-    Completed Orders
-  </button>
-  <button
-    onClick={() => navigate('/cancel-order')}
-    className="w-1/2 bg-red-500 text-white py-2 rounded hover:bg-red-700 ml-2"
-  >
-    Cancel Order
-  </button>
-</div>

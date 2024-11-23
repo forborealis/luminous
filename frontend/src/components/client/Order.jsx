@@ -104,11 +104,18 @@ const Orders = () => {
     );
   }
 
-  if (!orders.length) return <div>You have no orders.</div>;
+  if (!orders.length) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <Typography variant="h6" color="textSecondary" sx={{ fontFamily: 'Montserrat' }}>
+          You have no orders.
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">My Orders</h1>
 
       {/* Buttons to navigate to Cancel Orders and Completed Orders */}
       <Box mb={2} display="flex" justifyContent="flex-end">

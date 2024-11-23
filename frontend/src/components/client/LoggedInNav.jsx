@@ -8,6 +8,7 @@ import { faSignOutAlt, faShoppingCart, faSearch, faUser } from '@fortawesome/fre
 const LoggedInNav = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isOrdersDropdownOpen, setIsOrdersDropdownOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
@@ -64,7 +65,7 @@ const LoggedInNav = () => {
         <Link to="/shop" className="text-2xl font-semibold">
           <img src={headerLogo} alt="logo" className="w-32" />
         </Link>
-        <ul className="hidden space-x-6 lg:flex justify-center flex-1">
+        <ul className="hidden lg:flex justify-center flex-1 space-x-6">
           <li>
             <Link
               to="/shop"
@@ -81,16 +82,38 @@ const LoggedInNav = () => {
               Products
             </Link>
           </li>
-          <li>
-            <Link
-              to="/order"
-              className="hover:text-coral-red transition duration-300"
+          <li className="relative">
+            <span
+              className="cursor-pointer hover:text-coral-red transition duration-300"
+              onClick={() => setIsOrdersDropdownOpen(!isOrdersDropdownOpen)}
             >
               My Orders
-            </Link>
+            </span>
+            {isOrdersDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-2 z-50">
+                <Link
+                  to="/order"
+                  className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                >
+                  Orders
+                </Link>
+                <Link
+                  to="/completed-order"
+                  className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                >
+                  Completed
+                </Link>
+                <Link
+                  to="/cancle-order"
+                  className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                >
+                  Cancelled
+                </Link>
+              </div>
+            )}
           </li>
         </ul>
-        <div className="flex space-x-4 items-center relative ml-auto">
+        <div className="flex space-x-4 items-center relative ml--20">
           <form onSubmit={handleSearch} className="hidden lg:flex items-center">
             <input
               type="text"
@@ -99,9 +122,6 @@ const LoggedInNav = () => {
               placeholder="Search..."
               className="px-4 py-1 rounded-md text-black"
             />
-            <button type="submit" className="ml-2 text-white hover:text-coral-red transition duration-300">
-              <FontAwesomeIcon icon={faSearch} />
-            </button>
           </form>
           {isLoggedIn && (
             <>

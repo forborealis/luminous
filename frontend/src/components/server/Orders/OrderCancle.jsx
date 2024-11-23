@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import the hook
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import MUIDataTable from 'mui-datatables';
-import { Box, Button } from '@mui/material';
+import { Box, Button, ThemeProvider } from '@mui/material';
+import theme from './theme'; // Import the custom theme
 
 const OrderCancel = () => {
   const [canceledOrders, setCanceledOrders] = useState([]);
   const [expandedRows, setExpandedRows] = useState({});
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate(); // Initialize navigate
+  const navigate = useNavigate();
 
   // Fetch all canceled orders
   const fetchCanceledOrders = async () => {
@@ -55,11 +56,10 @@ const OrderCancel = () => {
     additionalProducts: order.items.slice(1), // Store additional products
   }));
 
-  // MUI DataTable columns
   const columns = [
     {
       name: 'userName',
-      label: 'Name',
+      label: 'User Name',
     },
     {
       name: 'productImage',
@@ -93,12 +93,12 @@ const OrderCancel = () => {
       },
     },
     {
-        name: 'shippingFee',
-        label: 'Shipping Fee',
-        options: {
-          customBodyRender: (value) => `₱${value.toFixed(2)}`,
-        },
+      name: 'shippingFee',
+      label: 'Shipping Fee',
+      options: {
+        customBodyRender: (value) => `₱${value.toFixed(2)}`,
       },
+    },
     {
       name: 'subtotal',
       label: 'Subtotal',
@@ -175,7 +175,7 @@ const OrderCancel = () => {
               padding: '5px',
             }}
           >
-            <Box sx={{ display: 'table-cell', padding: '10px' }}>Name</Box>
+            <Box sx={{ display: 'table-cell', padding: '10px' }}>User Name</Box>
             <Box sx={{ display: 'table-cell', padding: '10px' }}>Image</Box>
             <Box sx={{ display: 'table-cell', padding: '10px' }}>Product Name</Box>
             <Box sx={{ display: 'table-cell', padding: '10px' }}>Quantity</Box>
@@ -224,17 +224,23 @@ const OrderCancel = () => {
   };
 
   return (
-    <Box>
-      <Button variant="contained" onClick={() => navigate('/admin/Order')}>
-        Back
-      </Button>
-      <MUIDataTable
-        title={'Cancelled Orders'}
-        data={flattenedOrders}
-        columns={columns}
-        options={options}
-      />
-    </Box>
+    <ThemeProvider theme={theme}>
+      <Box sx={{ padding: '20px' }}>
+        <Button
+          variant="contained"
+          onClick={() => navigate('/admin/Order')}
+          sx={{ marginBottom: '20px', fontFamily: 'Montserrat, sans-serif' }}
+        >
+          Back
+        </Button>
+        <MUIDataTable
+          title={'Cancelled Orders'}
+          data={flattenedOrders}
+          columns={columns}
+          options={options}
+        />
+      </Box>
+    </ThemeProvider>
   );
 };
 

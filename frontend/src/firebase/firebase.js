@@ -6,13 +6,13 @@ import { getAnalytics } from "firebase/analytics";
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDixaGAYlsbI1fxSaT4kxL6DtlSdcFyNkM",
-  authDomain: "database512.firebaseapp.com",
-  projectId: "database512",
-  storageBucket: "database512.firebasestorage.app",
-  messagingSenderId: "961173587953",
-  appId: "1:961173587953:web:d5357d582b7eaf74816650",
-  measurementId: "G-C46R3WC8D8",
+  apiKey: "AIzaSyD_zT_bVnHA4diGg3c17gEvcSHpyKykI74",
+  authDomain: "luminous-c7752.firebaseapp.com",
+  projectId: "luminous-c7752",
+  storageBucket: "luminous-c7752.firebasestorage.app",
+  messagingSenderId: "530204624953",
+  appId: "1:530204624953:web:29b5125504b4f68d42e5e8",
+  measurementId: "G-F3KY0NN8WY"
 };
 
 // Initialize Firebase

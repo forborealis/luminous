@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import the hook
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import MUIDataTable from 'mui-datatables';
-import { Select, MenuItem, Box, Button } from '@mui/material';
+import { Select, MenuItem, Box, Button, Typography, ThemeProvider } from '@mui/material';
 import { toast } from 'react-toastify';
+import theme from './theme'; // Import the custom theme
 
 const OrderTable = () => {
   const [orders, setOrders] = useState([]);
   const [expandedRows, setExpandedRows] = useState({});
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate(); // Initialize navigate
-
+  const navigate = useNavigate();
 
   // Fetch all orders for admin
   const fetchAllOrders = async () => {
@@ -18,7 +18,7 @@ const OrderTable = () => {
       const response = await axios.get('http://localhost:5000/api/v1/admin/orders', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
-  
+
       const activeOrders = response.data.orders.filter(
         (order) => order.status !== 'Cancelled' && order.status !== 'Completed'
       );
@@ -30,7 +30,6 @@ const OrderTable = () => {
       setLoading(false);
     }
   };
-  
 
   // Handle order status change
   const handleStatusChange = async (orderId, newStatus) => {
@@ -41,7 +40,7 @@ const OrderTable = () => {
           order._id === orderId ? { ...order, status: newStatus } : order
         )
       );
-  
+
       const response = await axios.put(
         "http://localhost:5000/api/v1/orders/status",
         { orderId, status: newStatus },
@@ -49,9 +48,9 @@ const OrderTable = () => {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
-  
+
       toast.success(response.data.notification);
-  
+
       // Refresh orders from the backend for accuracy
       fetchAllOrders();
     } catch (error) {
@@ -62,10 +61,6 @@ const OrderTable = () => {
       fetchAllOrders();
     }
   };
-  
-  
-  
-  
 
   const toggleRowExpansion = (orderId) => {
     setExpandedRows((prevState) => ({
@@ -162,20 +157,18 @@ const OrderTable = () => {
           const { orderId } = flattenedOrders[rowIndex];
           return (
             <Select
-            value={value}
-            onChange={(e) => handleStatusChange(orderId, e.target.value)} // Correctly sending 'newStatus'
-            fullWidth
-          >
-            <MenuItem value="Order Placed">Order Placed</MenuItem>
-            <MenuItem value="To Ship">To Ship</MenuItem>
-            <MenuItem value="Shipped">Shipped</MenuItem>
-            <MenuItem value="Completed">Completed</MenuItem>
-            <MenuItem value="Cancelled">Cancelled</MenuItem> {/* New option */}
-          </Select>
-          
+              value={value}
+              onChange={(e) => handleStatusChange(orderId, e.target.value)}
+              fullWidth
+            >
+              <MenuItem value="Order Placed">Order Placed</MenuItem>
+              <MenuItem value="To Ship">To Ship</MenuItem>
+              <MenuItem value="Shipped">Shipped</MenuItem>
+              <MenuItem value="Completed">Completed</MenuItem>
+              <MenuItem value="Cancelled">Cancelled</MenuItem>
+            </Select>
           );
         },
-        
       },
     },
     {
@@ -213,7 +206,7 @@ const OrderTable = () => {
       const { rowIndex } = rowMeta;
       const order = flattenedOrders[rowIndex];
       if (!expandedRows[order.orderId]) return null;
-    
+
       return (
         <Box
           sx={{
@@ -243,10 +236,10 @@ const OrderTable = () => {
             <Box sx={{ display: 'table-cell', padding: '10px' }}>Total</Box>
             <Box sx={{ display: 'table-cell', padding: '10px' }}>Status</Box>
           </Box>
-    
+
           {/* Table Rows */}
           {order.additionalProducts.map((item, index) => {
-            const currentStatus = item?.status || order.status; // Define value
+            const currentStatus = item?.status || order.status;
             return (
               <Box
                 key={index}
@@ -281,8 +274,8 @@ const OrderTable = () => {
                 </Box>
                 <Box sx={{ display: 'table-cell', padding: '10px' }}>
                   <Select
-                    value={currentStatus} // Correctly define value
-                    onChange={(e) => handleStatusChange(order.orderId, e.target.value)} // Correctly pass orderId
+                    value={currentStatus}
+                    onChange={(e) => handleStatusChange(order.orderId, e.target.value)}
                     fullWidth
                   >
                     <MenuItem value="Order Placed">Order Placed</MenuItem>
@@ -299,27 +292,36 @@ const OrderTable = () => {
       );
     },
   };
-  
-  
-  return (
-    <Box>
 
-<Button variant="contained" onClick={() => navigate('/admin/OrderCancle')}>
-            Cancled Orders
+  return (
+    <ThemeProvider theme={theme}>
+      <Box sx={{ padding: '20px' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate('/admin/OrderCancle')}
+            sx={{ marginRight: '10px' }}
+          >
+            Cancelled Orders
           </Button>
-          <Button variant="contained" onClick={() => navigate('/admin/OrderCompleted')}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate('/admin/OrderCompleted')}
+          >
             Completed Orders
           </Button>
-      <MUIDataTable
-        title={'Order Management'}
-        data={flattenedOrders}
-        columns={columns}
-        options={options}
-      />
-    </Box>
+        </Box>
+        <MUIDataTable
+          title={'Order Management'}
+          data={flattenedOrders}
+          columns={columns}
+          options={options}
+        />
+      </Box>
+    </ThemeProvider>
   );
-
-  
 };
 
 export default OrderTable;

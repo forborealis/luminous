@@ -1,4 +1,3 @@
-// src/components/client/Signup.jsx
 import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { registerUser } from '../../firebase/authFunctions'; // Firebase registration function
@@ -12,6 +11,7 @@ import GoogleIcon from '@mui/icons-material/Google'; // Import Google Icon
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import signupImage from '../../assets/images/signup-image.jpg'; // Replace with your image path
+import { requestFCMToken } from "../../firebase/fcmFunction"; // Import the FCM token function
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -22,6 +22,17 @@ const Signup = () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
+
+      // Dynamically request a fresh FCM token
+      let fcmToken;
+      try {
+        fcmToken = await requestFCMToken();
+      } catch (error) {
+        console.error("Error generating FCM token:", error);
+        setError("Failed to generate FCM token. Please enable notifications.");
+        return;
+      }
+
       // Save the user information to your backend
       const formData = {
         firebaseUID: user.uid,
@@ -39,6 +50,29 @@ const Signup = () => {
       if (response.data.success) {
         // Store the token in local storage
         localStorage.setItem('token', response.data.token);
+        localStorage.setItem('role', response.data.role);
+        localStorage.setItem('firebaseUID', user.uid); // Store Firebase UID
+
+        // Save the FCM token to the backend
+        try {
+          await axios.post(
+            'http://localhost:5000/api/v1/users/save-fcm-token',
+            {
+              firebaseUID: user.uid,
+              fcmToken,
+            },
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${response.data.token}`,  // Include the JWT token
+              },
+            }
+          );
+        } catch (saveTokenError) {
+          console.error("Failed to save FCM token:", saveTokenError);
+          toast.error("FCM token could not be saved. Notifications may not work.");
+        }
+
         toast.success('Google Sign-Up successful!');
         window.dispatchEvent(new Event('loginStateChange')); // Dispatch the event
         navigate('/edit-profile'); // Redirect to edit profile page
@@ -104,8 +138,8 @@ const Signup = () => {
         <div className="w-1/2 hidden md:block">
           <img src={signupImage} alt="Signup" className="w-full h-full object-cover rounded-l-lg" />
         </div>
-        <div className="w-full md:w-1/2 p-8 mt-10"> {/* Added mt-10 to bring the contents lower */}
-          <h2 className="text-2xl font-semibold mb-6 text-center">Welcome!</h2>
+        <div className="w-full md:w-1/2 p-8">
+          <h2 className="text-2xl font-semibold mb-6 text-center">Sign Up</h2>
           <Formik
             initialValues={{
               email: '',
@@ -191,14 +225,14 @@ const Signup = () => {
                   {error && <p className="text-red-500 mb-4 font-montserrat">{error}</p>}
                   <button
                     type="submit"
-                    className="w-3/4 bg-dark-pink text-white py-2 rounded hover:bg-coral-red font-montserrat"
+                    className="w-3/4 bg-coral-red text-white py-2 rounded hover:bg-coral-red-dark font-montserrat"
                     disabled={isSubmitting}
                   >
                     Sign Up
                   </button>
                   <button
                     onClick={handleGoogleSignUp}
-                    className="w-3/4 bg-pale-blue text-white py-2 rounded mt-4 hover:bg-pale-blue font-montserrat flex items-center justify-center"
+                    className="w-3/4 bg-blue-500 text-white py-2 rounded mt-4 hover:bg-blue-600 font-montserrat flex items-center justify-center"
                   >
                     <GoogleIcon className="mr-2" /> Google
                   </button>

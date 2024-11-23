@@ -1,12 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Box, Button } from '@mui/material';
+import {
+  TableContainer,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Paper,
+  Box,
+  Pagination,
+  CircularProgress,
+  Typography,
+  Button,
+} from '@mui/material';
 
 const CompletedOrder = () => {
   const [completedOrders, setCompletedOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState({});
   const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
   const fetchCompletedOrders = async () => {
     try {
@@ -26,6 +42,8 @@ const CompletedOrder = () => {
       setCurrentImageIndex(initialImageIndex);
     } catch (error) {
       console.error('Error fetching completed orders:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -49,11 +67,43 @@ const CompletedOrder = () => {
     fetchCompletedOrders();
   }, []);
 
-  if (!completedOrders.length) return <div>You have no completed orders.</div>;
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <CircularProgress />
+        <Typography variant="h6" color="textSecondary" sx={{ ml: 2 }}>
+          Loading...
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (!completedOrders.length) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <Typography variant="h6" color="textSecondary" sx={{ fontFamily: 'Montserrat' }}>
+          You have no completed orders.
+        </Typography>
+      </Box>
+    );
+  }
+
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+  };
+
+  // Flatten orders into individual items
+  const flattenedItems = completedOrders.flatMap((order) =>
+    order.items.map((item) => ({
+      ...item,
+      orderStatus: order.status,
+    }))
+  );
+
+  const paginatedItems = flattenedItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Completed Orders</h1>
 
       {/* Button to navigate back */}
       <Box mb={2} display="flex" justifyContent="flex-end">
@@ -65,52 +115,80 @@ const CompletedOrder = () => {
       {completedOrders.length === 0 ? (
         <div>No completed orders found.</div>
       ) : (
-        <table className="w-full border-collapse border border-gray-300">
-          <thead className="bg-gray-200">
-            <tr>
-              <th className="border border-gray-300 px-4 py-2">Image</th>
-              <th className="border border-gray-300 px-4 py-2">Name</th>
-              <th className="border border-gray-300 px-4 py-2">Quantity</th>
-              <th className="border border-gray-300 px-4 py-2">Price</th>
-              <th className="border border-gray-300 px-4 py-2">Subtotal</th>
-              <th className="border border-gray-300 px-4 py-2">Shipping Fee</th>
-              <th className="border border-gray-300 px-4 py-2">Total</th>
-              <th className="border border-gray-300 px-4 py-2">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {completedOrders.map((order) =>
-              order.items.map((item) => {
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontFamily: 'Montserrat' }}>Image</TableCell>
+                <TableCell sx={{ fontFamily: 'Montserrat' }}>Name</TableCell>
+                <TableCell sx={{ fontFamily: 'Montserrat' }}>Quantity</TableCell>
+                <TableCell sx={{ fontFamily: 'Montserrat' }}>Price</TableCell>
+                <TableCell sx={{ fontFamily: 'Montserrat' }}>Subtotal</TableCell>
+                <TableCell sx={{ fontFamily: 'Montserrat' }}>Shipping Fee</TableCell>
+                <TableCell sx={{ fontFamily: 'Montserrat' }}>Total</TableCell>
+                <TableCell sx={{ fontFamily: 'Montserrat' }}>Status</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {paginatedItems.map((item) => {
                 const subtotal = item.product.price * item.quantity;
-                const total = subtotal + 50;
+                const total = subtotal + 50; // Including the shipping fee
                 const productImages = item.product.images;
                 const currentIndex = currentImageIndex[item.product._id] || 0;
 
                 return (
-                  <tr key={item.product._id}>
-                    <td className="border border-gray-300 px-4 py-2">
+                  <TableRow key={item.product._id}>
+                    <TableCell sx={{ fontFamily: 'Montserrat' }}>
                       <div className="relative flex flex-col items-center">
                         <img
                           src={productImages[currentIndex]}
                           alt={item.product.name}
                           className="w-16 h-16 object-cover mx-auto"
                         />
+                        <div className="flex mt-2 gap-2">
+                          <button
+                            onClick={() => handleImageChange(item.product._id, 'prev')}
+                            disabled={productImages.length <= 1}
+                            className={`px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 ${
+                              productImages.length <= 1 ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
+                          >
+                            ←
+                          </button>
+                          <button
+                            onClick={() => handleImageChange(item.product._id, 'next')}
+                            disabled={productImages.length <= 1}
+                            className={`px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 ${
+                              productImages.length <= 1 ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
+                          >
+                            →
+                          </button>
+                        </div>
                       </div>
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">{item.product.name}</td>
-                    <td className="border border-gray-300 px-4 py-2">{item.quantity}</td>
-                    <td className="border border-gray-300 px-4 py-2">₱{item.product.price.toFixed(2)}</td>
-                    <td className="border border-gray-300 px-4 py-2">₱{subtotal.toFixed(2)}</td>
-                    <td className="border border-gray-300 px-4 py-2">₱50.00</td>
-                    <td className="border border-gray-300 px-4 py-2">₱{total.toFixed(2)}</td>
-                    <td className="border border-gray-300 px-4 py-2">{order.status}</td>
-                  </tr>
+                    </TableCell>
+                    <TableCell sx={{ fontFamily: 'Montserrat' }}>{item.product.name}</TableCell>
+                    <TableCell sx={{ fontFamily: 'Montserrat' }}>{item.quantity}</TableCell>
+                    <TableCell sx={{ fontFamily: 'Montserrat' }}>₱{item.product.price.toFixed(2)}</TableCell>
+                    <TableCell sx={{ fontFamily: 'Montserrat' }}>₱{subtotal.toFixed(2)}</TableCell>
+                    <TableCell sx={{ fontFamily: 'Montserrat' }}>₱50.00</TableCell>
+                    <TableCell sx={{ fontFamily: 'Montserrat' }}>₱{total.toFixed(2)}</TableCell>
+                    <TableCell sx={{ fontFamily: 'Montserrat' }}>{item.orderStatus}</TableCell>
+                  </TableRow>
                 );
-              })
-            )}
-          </tbody>
-        </table>
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
+      <Box display="flex" justifyContent="center" mt={4}>
+        <Pagination
+          count={Math.ceil(flattenedItems.length / itemsPerPage)}
+          page={currentPage}
+          onChange={handlePageChange}
+          color="primary"
+        />
+      </Box>
     </div>
   );
 };

@@ -7,6 +7,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { TextField, Button, Box, Typography, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Validation schema with Yup
 const schema = yup.object().shape({
@@ -69,7 +71,7 @@ const CreateProduct = () => {
       await axios.post('http://localhost:5000/api/v1/products', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      alert('Product created successfully!');
+      toast.success('Product created successfully!');
       reset(); // Reset form fields
       setImagePreviews([]);
       setImages([]);

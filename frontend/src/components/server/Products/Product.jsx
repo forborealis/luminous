@@ -6,6 +6,8 @@ import { ArrowBack, ArrowForward } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from './theme'; // Import the custom theme
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ProductTable = () => {
   const [products, setProducts] = useState([]);
@@ -31,11 +33,11 @@ const ProductTable = () => {
 
   const handleUpdate = () => {
     if (selectedProductIds.length > 1) {
-      alert("Error: Cannot update multiple products.");
+      toast.error("Error: Cannot update multiple products.");
     } else if (selectedProductIds.length === 1) {
       navigate(`/admin/products/update/${selectedProductIds[0]}`);
     } else {
-      alert('Please select a product to update.');
+      toast.error('Please select a product to update.');
     }
   };
 
@@ -44,11 +46,11 @@ const ProductTable = () => {
       await Promise.all(
         selectedProductIds.map(id => axios.put(`http://localhost:5000/api/v1/products/${id}/soft-delete`))
       );
-      alert('Selected products moved to trash.');
+      toast.success('Selected products moved to trash.');
       fetchProducts();
     } catch (error) {
       console.error("Error soft deleting products:", error);
-      alert('Failed to delete selected products.');
+      toast.error('Failed to delete selected products.');
     }
   };
 

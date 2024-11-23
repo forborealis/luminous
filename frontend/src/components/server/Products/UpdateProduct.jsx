@@ -7,6 +7,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { TextField, Button, Box, Typography, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Validation schema with Yup
 const schema = yup.object().shape({
@@ -93,11 +95,11 @@ const UpdateProduct = () => {
       await axios.put(`http://localhost:5000/api/v1/products/${id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      alert('Product updated successfully!');
+      toast.success('Product updated successfully!');
       navigate('/admin/products');
     } catch (error) {
       console.error('Error updating product:', error);
-      alert('Failed to update product.');
+      toast.error('Failed to update product.');
     }
   };
 

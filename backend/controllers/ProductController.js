@@ -201,7 +201,8 @@
 
   exports.getTotalProducts = async (req, res) => {
     try {
-      const totalProducts = await Product.countDocuments();
+      const products = await Product.find(); // Fetch all products
+      const totalProducts = products.length; // Count the total number of products
       res.json({ total: totalProducts });
     } catch (error) {
       res.status(500).json({ message: error.message });

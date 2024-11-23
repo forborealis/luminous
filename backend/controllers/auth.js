@@ -471,3 +471,63 @@ exports.sendNotification = async (req, res) => {
     return res.status(500).json({ success: false, message: "Failed to send notification." });
   }
 };
+
+exports.deactivateUsers = async (req, res) => {
+  try {
+    const { userIds } = req.body;
+
+    if (!userIds || !Array.isArray(userIds)) {
+      return res.status(400).json({ success: false, message: "Invalid user IDs." });
+    }
+
+    await User.updateMany(
+      { firebaseUID: { $in: userIds }, status: 'Verified' },
+      { $set: { status: 'Deactivated' } }
+    );
+
+    res.json({ success: true, message: "Users have been deactivated." });
+  } catch (error) {
+    console.error("Error deactivating users:", error);
+    res.status(500).json({ success: false, message: "Failed to deactivate users." });
+  }
+};
+
+exports.getVerifiedUsers = async (req, res) => {
+  try {
+    const users = await User.find({ status: 'Verified', role: 'user' });
+    res.json({ users });
+  } catch (error) {
+    console.error("Error fetching verified users:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch verified users." });
+  }
+};
+
+exports.getDeactivatedUsers = async (req, res) => {
+  try {
+    const users = await User.find({ status: 'Deactivated', role: 'user' });
+    res.json({ users });
+  } catch (error) {
+    console.error("Error fetching deactivated users:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch deactivated users." });
+  }
+};
+
+exports.reactivateUsers = async (req, res) => {
+  try {
+    const { userIds } = req.body;
+
+    if (!userIds || !Array.isArray(userIds)) {
+      return res.status(400).json({ success: false, message: "Invalid user IDs." });
+    }
+
+    await User.updateMany(
+      { firebaseUID: { $in: userIds }, status: 'Deactivated' },
+      { $set: { status: 'Verified' } }
+    );
+
+    res.json({ success: true, message: "Users have been reactivated." });
+  } catch (error) {
+    console.error("Error reactivating users:", error);
+    res.status(500).json({ success: false, message: "Failed to reactivate users." });
+  }
+};

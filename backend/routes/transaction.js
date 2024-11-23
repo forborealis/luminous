@@ -8,7 +8,8 @@ const {
   removeFromCart,
   checkout,
   getUserOrders,
-//   updateOrderStatus,
+  updateOrderStatus,
+  getAllOrders,
 } = require('../controllers/transaction');
 
 // Cart routes
@@ -24,7 +25,10 @@ router.post('/checkout', isAuthenticatedUser, checkout);
 router.get('/orders', isAuthenticatedUser, getUserOrders);
 
 // OrderTable route
-// router.put('/orders/status', isAuthenticatedUser, updateOrderStatus);
+router.put('/orders/status', isAuthenticatedUser, updateOrderStatus);
+
+router.get('/admin/orders', isAuthenticatedUser, getAllOrders);
+
 
 
 module.exports = router;

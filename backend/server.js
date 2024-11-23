@@ -3,6 +3,8 @@ const connectDatabase = require('./config/database');
 const cloudinary = require('cloudinary').v2;
 const dotenv = require('dotenv');
 const adminSetup = require('./utils/adminSetup'); // Utility to handle admin creation
+require('./config/firebase-config'); // Initialize Firebase Admin (no need to export it)
+
 
 // Load environment variables
 dotenv.config({ path: './config/.env' });

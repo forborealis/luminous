@@ -28,6 +28,10 @@ import ResetPassword from './components/client/ResetPassword';
 import Cart from './components/client/Cart';
 import Checkout from './components/client/Checkout'; 
 import Order from './components/client/Order';
+import CancleOrder from './components/client/CancleOrder';
+import CompletedOrder from './components/client/CompletedOrder';
+
+
 
 const App = () => {
   const [loggedIn, setLoggedIn] = useState(!!localStorage.getItem( "token"));
@@ -104,6 +108,15 @@ const App = () => {
                  <Route path="/order" element={
                   <ProtectedRoute>
                     <Order />
+                    </ProtectedRoute>} />
+                <Route path="/cancle-order" element={
+                  <ProtectedRoute>
+                    <CancleOrder />
+                    </ProtectedRoute>} />
+
+                    <Route path="/completed-order" element={
+                  <ProtectedRoute>
+                    <CompletedOrder />
                     </ProtectedRoute>} />
                 </Routes>
               </main>

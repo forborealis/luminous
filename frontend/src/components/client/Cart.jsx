@@ -96,6 +96,7 @@ const Cart = () => {
         <Button variant="contained" color="success" onClick={goToOrders} sx={{ fontFamily: 'Montserrat' }}>
           Go to Orders
         </Button>
+
       </Box>
       {cart.length === 0 ? (
         <Typography variant="h6" color="textSecondary" sx={{ fontFamily: 'Montserrat' }}>

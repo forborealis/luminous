@@ -2,6 +2,28 @@ const Cart = require('../models/cart');
 const Order = require('../models/order');
 const Product = require('../models/products');
 const sendEmail = require('../utils/email');
+const admin = require("../config/firebase-config");
+
+
+const sendPushNotification = async (fcmToken, title, body) => {
+  try {
+    const payload = {
+      notification: {
+        title,
+        body,
+      },
+    };
+
+    const response = await admin.messaging().sendToDevice(fcmToken, payload);
+    console.log("Push notification response:", response);
+  } catch (error) {
+    console.error("Error sending push notification:", error.message);
+  }
+};
+
+
+
+
 
 // Add product to cart
 exports.addToCart = async (req, res) => {
@@ -189,45 +211,169 @@ exports.getUserOrders = async (req, res) => {
   }
 };
 
+exports.getAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.find()
+      .populate('user', 'name email') // Populate user details
+      .populate('items.product', 'name images price'); // Populate product details
 
-// exports.updateOrderStatus = async (req, res) => {
-//   try {
-//     const { orderId, status } = req.body;
+    if (!orders || orders.length === 0) {
+      return res.status(404).json({ message: 'No orders found' });
+    }
 
-//     const order = await Order.findById(orderId).populate('items.product user');
-//     if (!order) {
-//       return res.status(404).json({ message: 'Order not found' });
-//     }
+    res.status(200).json({ orders });
+  } catch (error) {
+    console.error('Error fetching all orders:', error);
+    res.status(500).json({ message: 'Error fetching orders' });
+  }
+};
 
-//     order.status = status;
-//     await order.save();
 
-//     // Prepare the email content
-//     let emailMessage = '';
-//     let emailSubject = 'Order Update - Luminous Cosmetics';
-//     switch (status) {
-//       case 'To Ship':
-//         emailMessage = `${order.items[0].product.name} is to ship.`;
-//         break;
-//       case 'Shipped':
-//         emailMessage = `${order.items[0].product.name} has been shipped.`;
-//         break;
-//       case 'Completed':
-//         emailMessage = `
-//           <h1 style="color: green;">Completed</h1>
-//           <p>${order.items[0].product.name} has been successfully delivered.</p>`;
-//         break;
-//     }
 
-//     await sendEmail({
-//       email: order.user.email,
-//       subject: emailSubject,
-//       html: emailMessage,
-//     });
 
-//     res.status(200).json({ message: 'Order status updated successfully' });
-//   } catch (error) {
-//     console.error('Error updating order status:', error);
-//     res.status(500).json({ message: 'Error updating order status' });
-//   }
-// };
+exports.updateOrderStatus = async (req, res) => {
+  try {
+    const { orderId, status } = req.body;
+
+    // Validate inputs
+    if (!orderId || !status) {
+      return res.status(400).json({ message: "Order ID and status are required" });
+    }
+
+    const allowedStatuses = ["Order Placed", "To Ship", "Shipped", "Completed", "Cancelled"];
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({ message: `'${status}' is not a valid status` });
+    }
+
+    // Fetch the order and associated user
+    const order = await Order.findById(orderId).populate("items.product user");
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // Handle stock restoration if status is 'Cancelled'
+    if (status === "Cancelled") {
+      for (const item of order.items) {
+        const product = await Product.findById(item.product._id);
+        if (product) {
+          product.stock += item.quantity; // Restore the stock
+          await product.save(); // Save the updated product stock
+        }
+      }
+    }
+
+    // Update the order status
+    order.status = status;
+    await order.save();
+
+    // Prepare Email and Push Notification Messages
+    const productList = order.items
+      .map(
+        (item) =>
+          `<li>${item.product.name} (Quantity: ${item.quantity}) - ₱${
+            item.product.price * item.quantity
+          }</li>`
+      )
+      .join("");
+
+    const emailContents = {
+      "Order Placed": {
+        subject: "Order Placed Confirmation",
+        message: `
+          <h1>Your Order Has Been Placed!</h1>
+          <p>Dear ${order.user.name},</p>
+          <p>Thank you for shopping with us. Your order has been successfully placed. Here are the details:</p>
+          <ul>${productList}</ul>
+          <p>Total Amount: ₱${order.totalAmount + 50}</p>
+        `,
+      },
+      "To Ship": {
+        subject: "Order Update: Preparing for Shipment",
+        message: `
+          <h1>Your Order is Being Prepared for Shipment!</h1>
+          <p>Dear ${order.user.name},</p>
+          <p>Your order is now being prepared for shipment. Here are the details:</p>
+          <ul>${productList}</ul>
+        `,
+      },
+      "Shipped": {
+        subject: "Order Shipped Notification",
+        message: `
+          <h1>Your Order Has Been Shipped!</h1>
+          <p>Dear ${order.user.name},</p>
+          <p>Your order is on its way. Here are the details:</p>
+          <ul>${productList}</ul>
+        `,
+      },
+      "Completed": {
+        subject: "Thank You for Your Purchase",
+        message: `
+          <h1>Thank You for Your Purchase!</h1>
+          <p>Dear ${order.user.name},</p>
+          <p>We are thrilled to inform you that your order has been successfully completed. Here are the details:</p>
+          <ul>${productList}</ul>
+        `,
+      },
+      "Cancelled": {
+        subject: "Order Cancellation Notice",
+        message: `
+          <h1>Order Cancellation Notice</h1>
+          <p>Dear ${order.user.name},</p>
+          <p>Your order has been cancelled. Here are the details:</p>
+          <ul>${productList}</ul>
+        `,
+      },
+    };
+
+    const pushMessages = {
+      "Order Placed": `Hi ${order.user.name}, your order has been successfully placed.`,
+      "To Ship": `Hi ${order.user.name}, your order is now being prepared for shipment.`,
+      "Shipped": `Hi ${order.user.name}, your order has been shipped and is on its way.`,
+      "Completed": `Hi ${order.user.name}, your order has been completed. Thank you for shopping with us!`,
+      "Cancelled": `Hi ${order.user.name}, your order has been cancelled.`,
+    };
+
+    // Send Email Notification
+    const emailSubject = emailContents[status]?.subject;
+    const emailMessage = emailContents[status]?.message;
+
+    if (emailSubject && emailMessage) {
+      await sendEmail({
+        email: order.user.email,
+        subject: emailSubject,
+        html: emailMessage,
+      });
+    }
+
+    // Send Push Notification
+    if (order.user.fcmToken) {
+      const title = "Order Status Update";
+      const body = pushMessages[status];
+      const payload = {
+        notification: {
+          title,
+          body,
+        },
+        token: order.user.fcmToken,
+      };
+
+      try {
+        const response = await admin.messaging().send(payload);
+        console.log("Push notification response:", response);
+      } catch (pushError) {
+        console.error("Error sending push notification:", pushError);
+      }
+    } else {
+      console.warn("No FCM token available for the user.");
+    }
+
+    // Respond to the client
+    res.status(200).json({
+      message: "Order status updated successfully and notifications sent.",
+      notification: `Order status updated to ${status} for order ID: ${orderId}.`,
+    });
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    res.status(500).json({ message: "Failed to update order status." });
+  }
+};

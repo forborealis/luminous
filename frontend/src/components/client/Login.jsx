@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 import 'react-toastify/dist/ReactToastify.css';
 import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { requestFCMToken } from "../../firebase/fcmFunction";
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import GoogleIcon from '@mui/icons-material/Google';
@@ -77,56 +78,82 @@ const Login = () => {
   });
 
   const handleSubmit = async (values, { setSubmitting }) => {
-    setError('');
+    setError(''); // Clear previous errors
     try {
-      // Authenticate using Firebase
       const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
       const firebaseUser = userCredential.user;
-
-      // Firebase authentication successful
+  
+      // Dynamically request a fresh FCM token
+      let fcmToken;
+      try {
+        fcmToken = await requestFCMToken();
+      } catch (error) {
+        console.error("Error generating FCM token:", error);
+        setError("Failed to generate FCM token. Please enable notifications.");
+        return;
+      }
+  
+      // Prepare user data for backend
       const formData = {
         firebaseUID: firebaseUser.uid,
         email: firebaseUser.email,
-        password: values.password, // Include password if required by the backend
+        password: values.password,
       };
-
-      // Send the user data to the backend for role and token validation
+  
+      // Send the user data to the backend for login
       const response = await axios.post('http://localhost:5000/api/v1/login', formData, {
         headers: { 'Content-Type': 'application/json' },
       });
-
+  
       if (response.data.success) {
-        // Save token, role, and Firebase UID in localStorage
+        // Save tokens and role in localStorage
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('role', response.data.role);
-        localStorage.setItem('firebaseUID', firebaseUser.uid); // Store Firebase UID
-        window.dispatchEvent(new Event('loginStateChange'));
-
-        // Redirect based on user role
+        localStorage.setItem('firebaseUID', firebaseUser.uid);
+  
+        // Save the FCM token to the backend
+        try {
+          await axios.post(
+            'http://localhost:5000/api/v1/users/save-fcm-token',
+            {
+              firebaseUID: firebaseUser.uid,
+              fcmToken,
+            },
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${response.data.token}`,  // Include the JWT token
+              },
+            }
+          );
+        } catch (saveTokenError) {
+          console.error("Failed to save FCM token:", saveTokenError);
+          toast.error("FCM token could not be saved. Notifications may not work.");
+        }
+  
+        toast.success('Login successful!');
+        window.dispatchEvent(new Event('loginStateChange')); // Trigger a login state change
+  
+        // Redirect user based on role
         if (response.data.role === 'Admin') {
           navigate('/admin/dashboard');
         } else {
           navigate('/shop');
         }
-        toast.success('Login successful!');
       } else {
-        setError(response.data.message);
+        setError(response.data.message); // Handle backend errors
       }
     } catch (error) {
       console.error('Error during login:', error);
-
-      // Log detailed error response
-      if (error.response && error.response.data) {
-        console.error('Backend Error:', error.response.data);
-        setError(error.response.data.message || 'Login failed.');
-      } else {
-        setError('Login failed. Please try again.');
-      }
+      setError('Login failed. Please try again.');
     } finally {
-      setSubmitting(false);
+      setSubmitting(false); // Stop submitting state
     }
   };
-
+  
+  
+  
+  
   useEffect(() => {
     if (location.state?.unauthorized) {
       toast.error('Unauthorized access.');

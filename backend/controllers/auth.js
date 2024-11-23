@@ -410,3 +410,56 @@ exports.resetPassword = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
+
+exports.saveFcmToken = async (req, res) => {
+  try {
+    const { firebaseUID, fcmToken } = req.body;
+
+    if (!firebaseUID || !fcmToken) {
+      return res.status(400).json({ success: false, message: "Firebase UID and FCM token are required." });
+    }
+
+    const user = await User.findOne({ firebaseUID });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found." });
+    }
+
+    // Update the user's FCM token
+    user.fcmToken = fcmToken;
+    await user.save();
+
+    return res.status(200).json({ success: true, message: "FCM token saved successfully." });
+  } catch (error) {
+    console.error("Error saving FCM token:", error);
+    return res.status(500).json({ success: false, message: "Internal server error." });
+  }
+};
+
+
+exports.sendNotification = async (req, res) => {
+  try {
+    const { firebaseUID, title, body } = req.body;
+
+    // Find the user and their FCM token
+    const user = await User.findOne({ firebaseUID });
+    if (!user || !user.fcmToken) {
+      return res.status(404).json({ success: false, message: "FCM token not found for user." });
+    }
+
+    const message = {
+      token: user.fcmToken,
+      notification: {
+        title,
+        body,
+      },
+    };
+
+    // Send the notification via FCM
+    const response = await admin.messaging().send(message);
+    return res.status(200).json({ success: true, message: "Notification sent successfully.", response });
+  } catch (error) {
+    console.error("Error sending notification:", error);
+    return res.status(500).json({ success: false, message: "Failed to send notification." });
+  }
+};

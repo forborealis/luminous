@@ -7,6 +7,9 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  fcmToken: { 
+    type: String 
+  }, 
   name: {
     type: String,
     required: [true, 'Please enter your name'],
@@ -48,6 +51,7 @@ const userSchema = new mongoose.Schema({
     enum: ['Pending', 'Verified'],
     default: 'Pending',
   },
+
   createdAt: {
     type: Date,
     default: Date.now,

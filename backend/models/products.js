@@ -26,6 +26,15 @@ const productSchema = new mongoose.Schema({
     type: [String],
     required: true,
   },
+  // New fields for review ratings
+  totalReviews: {
+    type: Number,
+    default: 0, // Number of reviews submitted for this product
+  },
+  averageRating: {
+    type: Number,
+    default: 0, // Calculated average rating from all reviews
+  },
   deleted: {
     type: Boolean,
     default: false, // Mark as not deleted initially
@@ -37,7 +46,28 @@ const productSchema = new mongoose.Schema({
   updatedAt: {
     type: Date,
     default: Date.now,
-  }
+  },
 });
+
+// Function to update average rating after each review
+productSchema.statics.updateRating = async function (productId) {
+  const reviews = await mongoose.model('Review').find({ productId });
+
+  if (reviews.length > 0) {
+    const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+    const averageRating = totalRating / reviews.length;
+
+    await this.findByIdAndUpdate(productId, {
+      totalReviews: reviews.length,
+      averageRating,
+    });
+  } else {
+    // If no reviews, reset ratings
+    await this.findByIdAndUpdate(productId, {
+      totalReviews: 0,
+      averageRating: 0,
+    });
+  }
+};
 
 module.exports = mongoose.model('Product', productSchema);

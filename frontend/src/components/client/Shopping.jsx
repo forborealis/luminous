@@ -6,7 +6,7 @@ import Slider from 'rc-slider';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import 'rc-slider/assets/index.css';
-import { CircularProgress, Typography, Box } from '@mui/material';
+import { CircularProgress, Typography, Box, Rating } from '@mui/material'; // Import Rating here
 
 const Shopping = () => {
   const [products, setProducts] = useState([]);
@@ -193,16 +193,39 @@ const Shopping = () => {
             <div key={product._id} className="border rounded-md p-4 shadow-md">
               <div className="cursor-pointer" onClick={() => handleImageClick(product._id)}>
                 <img
-                  src={product.images && product.images[0]} 
+                  src={product.images && product.images[0]}
                   alt={product.name}
                   className="w-full h-40 object-contain mb-4"
-                  onError={(e) => { e.target.onerror = null; e.target.src = 'fallback-image-url'; }} // Optional: Fallback image
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = 'fallback-image-url'; // Optional: Fallback image
+                  }}
                 />
               </div>
               <div className="px-4 pb-4">
+                {/* Product Name */}
                 <h2 className="text-lg font-semibold mb-2 text-coral-red">{product.name}</h2>
+
+                {/* Average Rating */}
+                <div className="mb-3 flex items-center">
+                  <Rating
+                    value={product.averageRating || 0} // Use product.averageRating, default to 0
+                    readOnly
+                    precision={0.5} // Ensure half-star ratings are possible
+                    size="small"
+                  />
+                  <span className="text-sm text-gray-600 ml-2">
+                    ({product.totalReviews || 0}) {/* Total reviews count */}
+                  </span>
+                </div>
+
+                {/* Product Description */}
                 <p className="text-sm text-gray-600 mb-3 truncate">{product.description}</p>
+
+                {/* Product Price */}
                 <p className="text-lg font-bold text-gray-900 mb-4">₱{product.price.toFixed(2)}</p>
+
+                {/* Add to Cart Button */}
                 <div className="flex justify-end">
                   <button
                     onClick={() => handleAddToCart(product)}

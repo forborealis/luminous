@@ -121,10 +121,11 @@
       }
       res.json({ product });
     } catch (error) {
-      console.error("Error fetching product by ID:", error);
+      console.error('Error fetching product by ID:', error);
       res.status(500).json({ message: 'Error retrieving product' });
     }
   };
+  
 
   exports.getDeletedProducts = async (req, res) => {
     try {

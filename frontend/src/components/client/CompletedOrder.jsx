@@ -127,6 +127,7 @@ const CompletedOrder = () => {
                 <TableCell sx={{ fontFamily: 'Montserrat' }}>Shipping Fee</TableCell>
                 <TableCell sx={{ fontFamily: 'Montserrat' }}>Total</TableCell>
                 <TableCell sx={{ fontFamily: 'Montserrat' }}>Status</TableCell>
+            
               </TableRow>
             </TableHead>
             <TableBody>
@@ -173,7 +174,18 @@ const CompletedOrder = () => {
                     <TableCell sx={{ fontFamily: 'Montserrat' }}>₱{subtotal.toFixed(2)}</TableCell>
                     <TableCell sx={{ fontFamily: 'Montserrat' }}>₱50.00</TableCell>
                     <TableCell sx={{ fontFamily: 'Montserrat' }}>₱{total.toFixed(2)}</TableCell>
-                    <TableCell sx={{ fontFamily: 'Montserrat' }}>{item.orderStatus}</TableCell>
+            
+                    <TableCell sx={{ fontFamily: 'Montserrat' }}>
+  {item.orderStatus === 'Completed' && (
+    <Button
+      onClick={() => navigate(`/create-review/${item.product._id}`)}
+      variant="outlined"
+      color="primary"
+    >
+      Review
+    </Button>
+  )}
+</TableCell>
                   </TableRow>
                 );
               })}

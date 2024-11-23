@@ -6,6 +6,8 @@ const auth = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const transactionRoutes = require('./routes/transaction'); 
 const salesRoutes = require('./routes/sales');
+const reviewsRoutes = require('./routes/reviews');
+
 
 
 
@@ -27,6 +29,8 @@ app.use('/api/v1', auth);
 app.use('/api/v1', productRoutes);
 app.use('/api/v1', transactionRoutes); 
 app.use('/api/v1', salesRoutes);
+app.use('/api/v1', reviewsRoutes);
+
 
 
 

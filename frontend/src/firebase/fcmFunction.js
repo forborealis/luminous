@@ -17,7 +17,7 @@ export const requestFCMToken = async () => {
 
     // Get a new FCM token
     const token = await getToken(messaging, {
-      vapidKey: "BBylJMkId-DQZfdHtrSPrdgsG0G8txKHrjtgjsYBLiKMvgKiXLB5qUn6hBlhhGrdF1b7Td6grwG-5JhFujc9Eho", // Your VAPID key
+      vapidKey: "BOXS4xCtMCxoxiBO_pqLkeTCmflsk1gQwd94ZNR7MEgRNhoyU6qDBUhC-BMQUll-medvd4IuW4qx6TXFpeOJINc", // Your VAPID key
       serviceWorkerRegistration: registration,
     });
 

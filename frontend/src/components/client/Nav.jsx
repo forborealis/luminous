@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { hamburger } from "../../assets/icons";
 import { headerLogo } from "../../assets/images";
-import { navLinks } from "../../constants";
 import { useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
@@ -50,7 +49,7 @@ const Nav = () => {
         <Link to="/" className="text-2xl font-semibold">
           <img src={headerLogo} alt="logo" className="w-32" />
         </Link>
-        <ul className="hidden space-x-6 lg:flex">
+        <ul className="hidden lg:flex justify-center flex-1 space-x-6">
           <li>
             <Link
               to="/"
@@ -67,8 +66,16 @@ const Nav = () => {
               Products
             </Link>
           </li>
+          <li>
+            <Link
+              to="/"
+              className="hover:text-coral-red transition duration-300"
+            >
+              About Us
+            </Link>
+          </li>
         </ul>
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4 ml-auto">
           <form onSubmit={handleSearch} className="flex items-center space-x-2">
             <input
               type="text"
@@ -77,12 +84,6 @@ const Nav = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="px-6 py-1 border rounded text-black"
             />
-            <button
-              type="submit"
-              className="text-white hover:text-coral-red transition duration-300"
-            >
-              <FontAwesomeIcon icon={faSearch} />
-            </button>
           </form>
           <Link
             to="/login"

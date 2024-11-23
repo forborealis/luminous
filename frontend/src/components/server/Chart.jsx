@@ -12,6 +12,8 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import { People, ShoppingCart, Store } from '@mui/icons-material';
+import { Box, IconButton } from '@mui/material';
 
 ChartJS.register(
   CategoryScale,
@@ -55,14 +57,18 @@ const Chart = () => {
         };
 
         const [usersResponse, ordersResponse, productsResponse] = await Promise.all([
-          axios.get('http://localhost:5000/api/v1/users/verified', config),
-          axios.get('http://localhost:5000/api/v1/orders', config),
+          axios.get('http://localhost:5000/api/v1/users/verified-details', config),
+          axios.get('http://localhost:5000/api/v1/admin/orders', config),
           axios.get('http://localhost:5000/api/v1/products', config),
         ]);
 
+        console.log('Users Response:', usersResponse.data);
+        console.log('Orders Response:', ordersResponse.data);
+        console.log('Products Response:', productsResponse.data);
+
         setTotalVerifiedUsers(usersResponse.data.total);
-        setTotalOrders(ordersResponse.data.total);
-        setTotalProducts(productsResponse.data.total);
+        setTotalOrders(ordersResponse.data.orders.length); // Access the orders array and get its length
+        setTotalProducts(productsResponse.data.products.length); // Access the products array and get its length
       } catch (error) {
         console.error('Error fetching summary data:', error);
       }
@@ -135,22 +141,37 @@ const Chart = () => {
   };
 
   return (
-    <div className="container mx-auto p-4 font-montserrat">
-      <div className="flex justify-between mb-6">
-        <div className="bg-white p-4 rounded-lg shadow-md w-1/3 text-center">
-          <h3 className="text-lg font-semibold">Verified Users</h3>
-          <p className="text-2xl">{totalVerifiedUsers}</p>
+    <div className="container mx-auto p-4 font-montserrat mt-8"> {/* Added margin-top */}
+      <div className="flex justify-center mb-6 gap-4">
+        <div className="bg-gray-50 p-6 rounded-lg shadow-md w-1/4 relative"> {/* Changed background color */}
+          <Box className="absolute top-4 right-4">
+            <IconButton style={{ backgroundColor: '#2196F3', color: 'white' }}>
+              <People />
+            </IconButton>
+          </Box>
+          <h3 className="text-sm font-normal text-left">Verified Users</h3>
+          <p className="text-4xl font-bold text-left">{totalVerifiedUsers}</p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow-md w-1/3 text-center">
-          <h3 className="text-lg font-semibold">Total Orders</h3>
-          <p className="text-2xl">{totalOrders}</p>
+        <div className="bg-gray-50 p-6 rounded-lg shadow-md w-1/4 relative"> {/* Changed background color */}
+          <Box className="absolute top-4 right-4">
+            <IconButton style={{ backgroundColor: '#4CAF50', color: 'white' }}>
+              <ShoppingCart />
+            </IconButton>
+          </Box>
+          <h3 className="text-sm font-normal text-left">Total Orders</h3>
+          <p className="text-4xl font-bold text-left">{totalOrders}</p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow-md w-1/3 text-center">
-          <h3 className="text-lg font-semibold">Total Products</h3>
-          <p className="text-2xl">{totalProducts}</p>
+        <div className="bg-gray-50 p-6 rounded-lg shadow-md w-1/4 relative"> {/* Changed background color */}
+          <Box className="absolute top-4 right-4">
+            <IconButton style={{ backgroundColor: '#FF5722', color: 'white' }}>
+              <Store />
+            </IconButton>
+          </Box>
+          <h3 className="text-sm font-normal text-left">Total Products</h3>
+          <p className="text-4xl font-bold text-left">{totalProducts}</p>
         </div>
       </div>
-      <div className="bg-white p-6 rounded-lg shadow-md relative">
+      <div className="bg-gray-50 p-6 rounded-lg shadow-md relative mt-8"> {/* Changed background color */}
         <div className="absolute top-4 right-4 flex items-center space-x-2">
           <DatePicker
             selected={startDate}

@@ -14,6 +14,8 @@ import OrderCancle from './Orders/OrderCancle'; // Import the OrderCancle compon
 import OrderCompleted from './Orders/OrderCompleted'; // Import the OrderCompleted component
 import { ToastContainer } from 'react-toastify'; // Import ToastContainer
 import Chart from './Chart'; 
+import User from './Users/User';
+import DeactivatedUser from './Users/DeactivatedUser';
 
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -68,6 +70,8 @@ const Dashboard = () => {
 
 
           <Route path="/chart" element={<ProtectedAdminRoute><Chart /></ProtectedAdminRoute>} />
+          <Route path="/users/deactivate" element={<ProtectedAdminRoute><User /></ProtectedAdminRoute>} />
+          <Route path="/users/deactivated" element={<ProtectedAdminRoute><DeactivatedUser /></ProtectedAdminRoute>} /> {/* Add the route for DeactivatedUser */}
         </Routes>
         <ToastContainer /> {/* Add ToastContainer to display toasts */}
       </Box>

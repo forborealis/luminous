@@ -138,7 +138,7 @@ const Signup = () => {
         <div className="w-1/2 hidden md:block">
           <img src={signupImage} alt="Signup" className="w-full h-full object-cover rounded-l-lg" />
         </div>
-        <div className="w-full md:w-1/2 p-8">
+        <div className="w-full md:w-1/2 p-8 mt-10"> {/* Added mt-10 to bring the contents lower */}
           <h2 className="text-2xl font-semibold mb-6 text-center">Sign Up</h2>
           <Formik
             initialValues={{
@@ -232,7 +232,7 @@ const Signup = () => {
                   </button>
                   <button
                     onClick={handleGoogleSignUp}
-                    className="w-3/4 bg-blue-500 text-white py-2 rounded mt-4 hover:bg-blue-600 font-montserrat flex items-center justify-center"
+                    className="w-3/4 bg-pale-blue text-white py-2 rounded mt-4 hover:bg-pale-blue font-montserrat flex items-center justify-center"
                   >
                     <GoogleIcon className="mr-2" /> Google
                   </button>

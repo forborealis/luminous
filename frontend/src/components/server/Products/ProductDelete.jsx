@@ -5,6 +5,8 @@ import { Button, Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from './theme'; // Import the custom theme
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ProductDelete = () => {
   const [deletedProducts, setDeletedProducts] = useState([]);
@@ -21,7 +23,7 @@ const ProductDelete = () => {
       setDeletedProducts(response.data.products || []); // Ensure fallback to empty array
     } catch (error) {
       console.error("Error fetching deleted products:", error);
-      alert("Failed to load deleted products.");
+      toast.error("Failed to load deleted products.");
     }
   };
 
@@ -30,12 +32,12 @@ const ProductDelete = () => {
       await Promise.all(
         selectedProductIds.map(id => axios.put(`http://localhost:5000/api/v1/products/${id}/restore`))
       );
-      alert('Selected products restored.');
+      toast.success('Selected products restored.');
       fetchDeletedProducts(); // Refresh after restore
       setSelectedProductIds([]); // Clear selection
     } catch (error) {
       console.error("Error restoring products:", error);
-      alert('Failed to restore selected products.');
+      toast.error('Failed to restore selected products.');
     }
   };
 
@@ -44,12 +46,12 @@ const ProductDelete = () => {
       await Promise.all(
         selectedProductIds.map(id => axios.delete(`http://localhost:5000/api/v1/products/${id}`))
       );
-      alert('Selected products permanently deleted.');
+      toast.success('Selected products permanently deleted.');
       fetchDeletedProducts(); // Refresh after permanent delete
       setSelectedProductIds([]); // Clear selection
     } catch (error) {
       console.error("Error permanently deleting products:", error);
-      alert('Failed to permanently delete selected products.');
+      toast.error('Failed to permanently delete selected products.');
     }
   };
 

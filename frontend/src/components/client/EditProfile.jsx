@@ -70,8 +70,8 @@ const EditProfile = () => {
   }
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100 font-montserrat">
-      <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
+    <div className="flex justify-center items-center min-h-screen bg-white-100 font-montserrat mt-12 mb-12"> {/* Added margin-top and margin-bottom */}
+      <div className="bg-white p-8 rounded shadow-md w-full max-w-lg"> {/* Increased max-width */}
         <h2 className="text-2xl font-bold mb-6 font-montserrat text-center">Edit Profile</h2>
         <Formik
           initialValues={{
@@ -94,7 +94,7 @@ const EditProfile = () => {
                   type="email"
                   id="email"
                   name="email"
-                  className="w-full px-3 py-2 border rounded font-montserrat"
+                  className="w-full px-3 py-2 border rounded-lg font-montserrat" // Rounded edges
                   disabled={user.firebaseUID ? true : false} // Disable if signed up with Google
                 />
                 <ErrorMessage name="email" component="div" className="text-red-500 font-montserrat" />
@@ -107,7 +107,7 @@ const EditProfile = () => {
                   type="text"
                   id="username"
                   name="username"
-                  className="w-full px-3 py-2 border rounded font-montserrat"
+                  className="w-full px-3 py-2 border rounded-lg font-montserrat" // Rounded edges
                 />
                 <ErrorMessage name="username" component="div" className="text-red-500 font-montserrat" />
               </div>
@@ -119,7 +119,7 @@ const EditProfile = () => {
                   type="text"
                   id="name"
                   name="name"
-                  className="w-full px-3 py-2 border rounded font-montserrat"
+                  className="w-full px-3 py-2 border rounded-lg font-montserrat" // Rounded edges
                 />
                 <ErrorMessage name="name" component="div" className="text-red-500 font-montserrat" />
               </div>
@@ -131,7 +131,7 @@ const EditProfile = () => {
                   type="text"
                   id="contactNumber"
                   name="contactNumber"
-                  className="w-full px-3 py-2 border rounded font-montserrat"
+                  className="w-full px-3 py-2 border rounded-lg font-montserrat" // Rounded edges
                 />
                 <ErrorMessage name="contactNumber" component="div" className="text-red-500 font-montserrat" />
               </div>
@@ -143,7 +143,7 @@ const EditProfile = () => {
                   type="text"
                   id="address"
                   name="address"
-                  className="w-full px-3 py-2 border rounded font-montserrat"
+                  className="w-full px-3 py-2 border rounded-lg font-montserrat" // Rounded edges
                 />
                 <ErrorMessage name="address" component="div" className="text-red-500 font-montserrat" />
               </div>

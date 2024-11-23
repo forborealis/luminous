@@ -1,7 +1,7 @@
 // src/components/client/Login.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import axios from 'axios';
 import 'react-toastify/dist/ReactToastify.css';
 import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
@@ -64,6 +64,11 @@ const Login = () => {
       });
 
       if (response.data.success) {
+        if (response.data.status === 'Deactivated') {
+          setError('Your account has been deactivated.');
+          return;
+        }
+
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('role', response.data.role);
         localStorage.setItem('firebaseUID', user.uid); // Store Firebase UID
@@ -101,7 +106,7 @@ const Login = () => {
       }
     } catch (error) {
       console.error('Error during Google Login:', error);
-      setError('Google Login failed. Please try again.');
+      toast.error('Google Login failed. Please try again.');
     }
   };
 
@@ -139,6 +144,11 @@ const Login = () => {
       });
   
       if (response.data.success) {
+        if (response.data.status === 'Deactivated') {
+          setError('Your account has been deactivated.');
+          return;
+        }
+  
         // Save tokens and role in localStorage
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('role', response.data.role);
@@ -193,6 +203,7 @@ const Login = () => {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 font-montserrat">
+      <ToastContainer /> {/* Add ToastContainer to display toasts */}
       <div className="bg-white rounded-lg shadow-lg flex w-full max-w-4xl">
         <div className="w-1/2 hidden md:block">
           <img src={loginImage} alt="Login" className="w-full h-full object-cover rounded-l-lg" />
@@ -245,7 +256,7 @@ const Login = () => {
           <div className="mt-6">
             <button
               onClick={handleGoogleLogin}
-              className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 flex items-center justify-center"
+              className="w-full bg-pale-blue text-white py-2 rounded hover:bg-pale-blue flex items-center justify-center"
             >
               <GoogleIcon className="mr-2" /> Google
             </button>

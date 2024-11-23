@@ -489,7 +489,8 @@ exports.getSalesData = async (req, res) => {
 
 exports.getTotalOrders = async (req, res) => {
   try {
-    const totalOrders = await Order.countDocuments();
+    const orders = await Order.find(); // Fetch all orders
+    const totalOrders = orders.length; // Count the total number of orders
     res.json({ total: totalOrders });
   } catch (error) {
     res.status(500).json({ message: error.message });

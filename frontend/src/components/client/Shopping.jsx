@@ -18,6 +18,7 @@ const Shopping = () => {
   const [maxPrice, setMaxPrice] = useState(1000);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [selectedRating, setSelectedRating] = useState(null); // State for selected rating
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -55,13 +56,14 @@ const Shopping = () => {
     const filtered = products.filter(product => {
       const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
       const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(product.category);
+      const matchesRating = selectedRating === null || (selectedRating === 1 ? product.averageRating >= 0.5 && product.averageRating <= 1.5 : product.averageRating >= selectedRating && product.averageRating < selectedRating + 1);
       const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                             product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
                             product.price.toString().includes(searchQuery);
-      return matchesPrice && matchesCategory && matchesSearch;
+      return matchesPrice && matchesCategory && matchesRating && matchesSearch;
     });
     setFilteredProducts(filtered);
-  }, [priceRange, products, selectedCategories, location.search]);
+  }, [priceRange, products, selectedCategories, selectedRating, location.search]);
 
   const handleImageClick = (productId) => {
     navigate(`/item-details/${productId}`);
@@ -103,6 +105,14 @@ const Shopping = () => {
 
   const getCategoryCount = (category) => {
     return products.filter(product => product.category === category).length;
+  };
+
+  const handleRatingChange = (rating) => {
+    setSelectedRating(rating);
+  };
+
+  const getRatingCount = (rating) => {
+    return products.filter(product => rating === 1 ? product.averageRating >= 0.5 && product.averageRating <= 1.5 : product.averageRating >= rating && product.averageRating < rating + 1).length;
   };
 
   if (loading) {
@@ -182,6 +192,16 @@ const Shopping = () => {
               <label htmlFor={category} className="ml-2 text-sm text-gray-700">
                 {category} ({getCategoryCount(category)})
               </label>
+            </div>
+          ))}
+        </div>
+
+        <h2 className="text-lg font-semibold mb-4">By Rating</h2>
+        <div className="mb-4">
+          {[5, 4, 3, 2, 1].map((rating) => (
+            <div key={rating} className="flex items-center mb-2 cursor-pointer" onClick={() => handleRatingChange(rating)}>
+              <Rating value={rating} readOnly precision={0.5} size="small" />
+              <span className="ml-2 text-sm text-gray-700">({getRatingCount(rating)})</span>
             </div>
           ))}
         </div>

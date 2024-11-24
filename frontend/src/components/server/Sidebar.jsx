@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Box, List, Divider, IconButton, Typography } from '@mui/material';
 import { DashboardOutlined, StorefrontOutlined, PeopleAltOutlined, ExpandLess, ExpandMore,
   SellOutlined, AddCircleOutlineOutlined, DeleteOutlineOutlined,
-  CheckCircleOutlineOutlined, DoDisturbOutlined, PersonOffOutlined } from '@mui/icons-material';
+  CheckCircleOutlineOutlined, DoDisturbOutlined, PersonOffOutlined, ReviewsOutlined } from '@mui/icons-material';
 import SellIcon from '@mui/icons-material/Sell';
 import Item from './Item';
 import headerLogo from '../../assets/images/header-logo.svg'; 
@@ -49,7 +49,7 @@ const Sidebar = () => {
         <Item title="Orders" path="/admin/Order" icon={<SellOutlined/>} isExpanded={isExpanded} />
         <Item title="Completed Orders" path="/admin/OrderCompleted" icon={<CheckCircleOutlineOutlined/>} isExpanded={isExpanded} />
         <Item title="Cancelled Orders" path="/admin/OrderCancle" icon={<DoDisturbOutlined/>} isExpanded={isExpanded} />
-        <Item title="Reviews" path="/admin/CompletedReview" icon={<DoDisturbOutlined/>} isExpanded={isExpanded} />
+        <Item title="Reviews" path="/admin/CompletedReview" icon={<ReviewsOutlined/>} isExpanded={isExpanded} />
       </List>
       <IconButton
         onClick={toggleSidebar}

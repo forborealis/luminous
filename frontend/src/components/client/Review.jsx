@@ -14,6 +14,7 @@ import {
   CircularProgress,
   Typography,
   Button,
+  Rating,
 } from '@mui/material';
 import WarningIcon from '@mui/icons-material/Warning'; // Import Warning Icon
 
@@ -71,8 +72,8 @@ const Review = () => {
   const paginatedItems = reviewedItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
-    <div className="container mx-auto p-4">
-      <Box mb={2} display="flex" justifyContent="flex-end">
+    <div className="container mx-auto p-4 font-montserrat">
+      <Box mb={2} display="flex" justifyContent="space-between">
         <Button onClick={() => navigate('/completed-order')} variant="contained" color="primary">
           Back to Completed Orders
         </Button>
@@ -82,11 +83,11 @@ const Review = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Image</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Rating</TableCell>
-              <TableCell>Review</TableCell>
-              <TableCell>Action</TableCell>
+              <TableCell sx={{ fontFamily: 'Montserrat' }}></TableCell>
+              <TableCell sx={{ fontFamily: 'Montserrat' }}>Product</TableCell>
+              <TableCell sx={{ fontFamily: 'Montserrat' }}>Rating</TableCell>
+              <TableCell sx={{ fontFamily: 'Montserrat' }}>Review</TableCell>
+              <TableCell sx={{ fontFamily: 'Montserrat' }}>Action</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -94,35 +95,37 @@ const Review = () => {
               <TableRow
                 key={item._id}
                 style={{
-                  opacity: item.softDeleted ? 0.5 : 1, // Make soft-deleted rows lighter
-                  cursor: item.softDeleted ? 'not-allowed' : 'pointer', // Disable hover for soft-deleted rows
+                  opacity: item.softDeleted ? 0.5 : 1, 
+                  cursor: item.softDeleted ? 'not-allowed' : 'pointer', 
                 }}
                 onMouseEnter={(e) => {
                   if (item.softDeleted) e.target.style.cursor = 'not-allowed';
                 }}
               >
-                <TableCell>
+                <TableCell sx={{ fontFamily: 'Montserrat' }}>
                   {item.softDeleted ? (
                     <Box display="flex" justifyContent="center" alignItems="center">
-                      <WarningIcon color="warning" /> {/* Display warning icon */}
+                      <WarningIcon color="warning" /> 
                     </Box>
                   ) : (
                     <img
-                      src={item.productId?.images[0]} // Display the first product image
+                      src={item.productId?.images[0]} 
                       alt={item.productId?.name}
-                      className="w-16 h-16 object-cover"
+                      className="w-16 h-16 object-cover mx-auto"
                     />
                   )}
                 </TableCell>
-                <TableCell>{item.productId?.name || 'Unknown Product'}</TableCell>
-                <TableCell>{item.rating} / 5</TableCell>
-                <TableCell>{item.reviewText}</TableCell>
-                <TableCell>
+                <TableCell sx={{ fontFamily: 'Montserrat' }}>{item.productId?.name || 'Unknown Product'}</TableCell>
+                <TableCell sx={{ fontFamily: 'Montserrat' }}>
+                  <Rating value={item.rating} readOnly precision={0.5} size="small" />
+                </TableCell>
+                <TableCell sx={{ fontFamily: 'Montserrat' }}>{item.reviewText}</TableCell>
+                <TableCell sx={{ fontFamily: 'Montserrat' }}>
                   <Button
-                    onClick={() => navigate(`/update-review/${item._id}`)} // Use item._id for review ID
+                    onClick={() => navigate(`/update-review/${item._id}`)} 
                     variant="outlined"
                     color="secondary"
-                    disabled={item.softDeleted} // Disable button for soft-deleted rows
+                    disabled={item.softDeleted} 
                   >
                     Update Review
                   </Button>

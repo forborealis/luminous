@@ -237,6 +237,9 @@ const Login = () => {
                   />
                   <ErrorMessage name="password" component="div" className="text-red-500" />
                 </div>
+                <Link to="/forgot-password" className="text-sm text-gray hover:underline mb-4 block text-right">
+                  Forgot Password?
+                </Link>
                 {error && <p className="text-red-500 mb-4">{error}</p>}
                 <button
                   type="submit"

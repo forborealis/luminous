@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';
-import { CircularProgress, Typography, Box } from '@mui/material';
+import { CircularProgress, Typography, Box, Rating } from '@mui/material';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { useLocation } from 'react-router-dom';
@@ -17,6 +17,7 @@ const Products = () => {
   const [priceRange, setPriceRange] = useState([0, 1000]);
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(1000);
+  const [selectedRating, setSelectedRating] = useState(null); // State for selected rating
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -58,10 +59,11 @@ const Products = () => {
     const filtered = products.filter(product => {
       const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
       const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(product.category);
-      return matchesPrice && matchesCategory;
+      const matchesRating = selectedRating === null || (selectedRating === 1 ? product.averageRating >= 0.5 && product.averageRating <= 1.5 : product.averageRating >= selectedRating && product.averageRating < selectedRating + 1);
+      return matchesPrice && matchesCategory && matchesRating;
     });
     setFilteredProducts(filtered);
-  }, [priceRange, products, selectedCategories]);
+  }, [priceRange, products, selectedCategories, selectedRating]);
 
   const handleCategoryChange = (category) => {
     setSelectedCategories((prevSelectedCategories) =>
@@ -83,8 +85,16 @@ const Products = () => {
     setPriceRange([priceRange[0], value]);
   };
 
+  const handleRatingChange = (rating) => {
+    setSelectedRating(rating);
+  };
+
   const getCategoryCount = (category) => {
     return products.filter(product => product.category === category).length;
+  };
+
+  const getRatingCount = (rating) => {
+    return products.filter(product => rating === 1 ? product.averageRating >= 0.5 && product.averageRating <= 1.5 : product.averageRating >= rating && product.averageRating < rating + 1).length;
   };
 
   const groupByCategory = (products) => {
@@ -181,6 +191,16 @@ const Products = () => {
               </div>
             ))}
           </div>
+
+          <h2 className="text-lg font-semibold mb-4">By Rating</h2>
+          <div className="mb-4">
+            {[5, 4, 3, 2, 1].map((rating) => (
+              <div key={rating} className="flex items-center mb-2 cursor-pointer" onClick={() => handleRatingChange(rating)}>
+                <Rating value={rating} readOnly precision={0.5} size="small" />
+                <span className="ml-2 text-sm text-gray-700">({getRatingCount(rating)})</span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -248,6 +268,17 @@ const Products = () => {
               </Carousel>
               <div className="px-4 pb-4">
                 <h2 className="text-lg mb-2 text-coral-red">{product.name}</h2>
+                <div className="mb-3 flex items-center">
+                  <Rating
+                    value={product.averageRating || 0} // Use product.averageRating, default to 0
+                    readOnly
+                    precision={0.5} // Ensure half-star ratings are possible
+                    size="small"
+                  />
+                  <span className="text-sm text-gray-600 ml-2">
+                    ({product.totalReviews || 0}) {/* Total reviews count */}
+                  </span>
+                </div>
                 <p className="text-sm text-gray-600 mb-3 truncate">{product.description}</p>
                 <p className="text-lg font-bold text-gray-900 mb-4">₱{product.price.toFixed(2)}</p>
               </div>

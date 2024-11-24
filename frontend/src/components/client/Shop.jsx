@@ -36,7 +36,7 @@ const Shop = () => {
   const fetchProducts = async (page) => {
     try {
       setLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Add a delay of 1 second
+      await new Promise((resolve) => setTimeout(resolve, 1000)); 
       const response = await axios.get(`http://localhost:5000/api/v1/products/infinite-scroll?page=${page}&limit=8`);
       const newProducts = response.data.products;
       setProducts((prevProducts) => [...prevProducts, ...newProducts]);

@@ -87,17 +87,15 @@
     }
   };
 
-  // Get products for search on client side
   exports.getProductsForSearch = async (req, res) => {
     try {
       const searchQuery = req.query.search || '';
-      const searchRegex = new RegExp(searchQuery, 'i');
+      const searchRegex = new RegExp(searchQuery, 'i'); //performs case-insensitive searches
       const searchConditions = [
         { name: { $regex: searchRegex } },
         { category: { $regex: searchRegex } }
       ];
 
-      // If the search query is a number, add a condition for price
       if (!isNaN(searchQuery)) {
         searchConditions.push({ price: Number(searchQuery) });
       }

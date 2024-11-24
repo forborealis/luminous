@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import MUIDataTable from 'mui-datatables';
-import { Button, Box } from '@mui/material';
+import { Button, Box, ThemeProvider, CssBaseline } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import theme from './theme'; // Import the theme
 
 const DeletedReviews = () => {
   const [deletedReviews, setDeletedReviews] = useState([]);
@@ -160,20 +161,26 @@ const DeletedReviews = () => {
   };
 
   return (
-    <div style={{ margin: '20px' }}>
-      <Box display="flex" justifyContent="space-between" marginBottom="20px">
-        <h1>Deleted Reviews</h1>
-        <Button variant="contained" color="primary" onClick={() => navigate('/admin/CompletedReview')}>
-          Back to Completed Reviews
-        </Button>
-      </Box>
-      <MUIDataTable
-        title="Deleted Reviews"
-        data={deletedReviews}
-        columns={columns}
-        options={options}
-      />
-    </div>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <div style={{ margin: '20px', fontFamily: 'Montserrat' }}>
+        <Box display="flex" justifyContent="center" marginBottom="20px">
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate('/admin/CompletedReview')}
+          >
+            Back to Completed Reviews
+          </Button>
+        </Box>
+        <MUIDataTable
+          title="Deleted Reviews"
+          data={deletedReviews}
+          columns={columns}
+          options={options}
+        />
+      </div>
+    </ThemeProvider>
   );
 };
 

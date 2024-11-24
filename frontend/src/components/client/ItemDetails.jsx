@@ -3,8 +3,11 @@ import { useParams } from "react-router-dom";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import axios from "axios";
-import { CircularProgress, Typography, Box, Rating, Avatar, Grid } from "@mui/material";
+import { CircularProgress, Typography, Box, Rating, Avatar, Grid, Modal, IconButton } from "@mui/material";
 import wordfilter from "wordfilter"; // Import wordfilter
+import CloseIcon from '@mui/icons-material/Close';
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
 // Define your custom bad words
 const customBadWords = [
@@ -52,6 +55,9 @@ const ItemDetails = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [openModal, setOpenModal] = useState(false);
+  const [currentImage, setCurrentImage] = useState(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Sanitize reviews using wordfilter
   const sanitizeReviews = (reviews) => {
@@ -86,6 +92,26 @@ const ItemDetails = () => {
 
     fetchProductAndReviews();
   }, [productId]);
+
+  const handleOpenModal = (images, index) => {
+    setCurrentImage(images);
+    setCurrentImageIndex(index);
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setCurrentImage(null);
+    setCurrentImageIndex(0);
+  };
+
+  const handlePrevImage = () => {
+    setCurrentImageIndex((prevIndex) => (prevIndex - 1 + currentImage.length) % currentImage.length);
+  };
+
+  const handleNextImage = () => {
+    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % currentImage.length);
+  };
 
   if (loading) {
     return (
@@ -131,18 +157,18 @@ const ItemDetails = () => {
           </div>
         </div>
         <div className="md:w-1/2 md:pl-8 mt-8 md:mt-16">
-          <h2 className="text-2xl font-semibold mb-2">{product.name}</h2>
+          <h1 className="text-3xl font-semibold mb-2">{product.name}</h1>
           <p className="text-sm text-gray-600 mb-4">{product.category}</p>
           <p className="text-base text-gray-600 mb-4">Description: {product.description}</p>
           <p className="text-xl font-bold text-gray-600 mb-4">₱{product.price.toFixed(2)}</p>
         </div>
       </div>
 
-      <Typography variant="h5" sx={{ mt: 4 }}>
+      <Typography variant="h6" sx={{ mt: 4, fontFamily: 'Montserrat' }}>
         Reviews
       </Typography>
       {reviews.length === 0 ? (
-        <Typography>No reviews yet.</Typography>
+        <Typography sx={{ fontFamily: 'Montserrat' }}>No reviews yet.</Typography>
       ) : (
         <Box sx={{ mt: 2 }}>
           {reviews.map((review) => (
@@ -154,16 +180,17 @@ const ItemDetails = () => {
                 border: "1px solid #ddd",
                 borderRadius: "8px",
                 boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+                fontFamily: 'Montserrat',
               }}
             >
               <Grid container spacing={2}>
                 <Grid item>
-                  <Avatar alt={review.userId.name} src={review.userId.avatar} />
+                  <Avatar alt={review.userId.name} src={review.userId.avatar?.url || ''} />
                 </Grid>
                 <Grid item xs>
-                  <Typography variant="h6">{review.userId.name}</Typography>
+                  <Typography variant="h6" sx={{ fontFamily: 'Montserrat' }}>{review.userId.name}</Typography>
                   <Rating value={review.rating} readOnly precision={0.5} />
-                  <Typography variant="body2" sx={{ mt: 1 }}>
+                  <Typography variant="body2" sx={{ mt: 1, fontFamily: 'Montserrat' }}>
                     {review.reviewText}
                   </Typography>
                   {review.images.length > 0 && (
@@ -174,11 +201,13 @@ const ItemDetails = () => {
                           src={image}
                           alt={`Review ${index}`}
                           style={{
-                            width: "60px",
-                            height: "60px",
+                            width: "100px",
+                            height: "100px",
                             objectFit: "cover",
                             borderRadius: "8px",
+                            cursor: "pointer",
                           }}
+                          onClick={() => handleOpenModal(review.images, index)}
                         />
                       ))}
                     </Box>
@@ -189,6 +218,42 @@ const ItemDetails = () => {
           ))}
         </Box>
       )}
+
+      <Modal open={openModal} onClose={handleCloseModal}>
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '80%',
+            bgcolor: 'transparent', // Set background to transparent
+            boxShadow: 24,
+            p: 4,
+            outline: 'none',
+          }}
+        >
+          <IconButton
+            sx={{ position: 'absolute', top: 8, right: 8 }}
+            onClick={handleCloseModal}
+          >
+            <CloseIcon />
+          </IconButton>
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <IconButton onClick={handlePrevImage} disabled={!currentImage || currentImage.length <= 1}>
+              <ArrowBackIosIcon />
+            </IconButton>
+            <img
+              src={currentImage ? currentImage[currentImageIndex] : ''}
+              alt="Review"
+              style={{ maxHeight: '80vh', maxWidth: '100%', objectFit: 'contain' }}
+            />
+            <IconButton onClick={handleNextImage} disabled={!currentImage || currentImage.length <= 1}>
+              <ArrowForwardIosIcon />
+            </IconButton>
+          </Box>
+        </Box>
+      </Modal>
     </div>
   );
 };

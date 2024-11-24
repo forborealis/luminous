@@ -21,7 +21,7 @@ const LoggedInNav = () => {
   };
 
   const handleCartClick = () => {
-    navigate("/cart"); // Navigate to the cart page
+    navigate("/cart"); 
   };
 
   const handleScroll = () => {
@@ -35,7 +35,7 @@ const LoggedInNav = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     navigate(`/shopping?search=${searchQuery}`);
-    setSearchQuery(''); // Clear the search bar text after a successful search
+    setSearchQuery(''); 
   };
 
   useEffect(() => {
@@ -56,6 +56,11 @@ const LoggedInNav = () => {
       window.removeEventListener('loginStateChange', handleLoginStateChange);
     };
   }, []);
+
+  const handleLinkClick = () => {
+    setIsDropdownOpen(false);
+    setIsOrdersDropdownOpen(false);
+  };
 
   return (
     <header
@@ -94,20 +99,30 @@ const LoggedInNav = () => {
                 <Link
                   to="/order"
                   className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                  onClick={handleLinkClick}
                 >
                   Orders
                 </Link>
                 <Link
                   to="/completed-order"
                   className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                  onClick={handleLinkClick}
                 >
                   Completed
                 </Link>
                 <Link
                   to="/cancle-order"
                   className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                  onClick={handleLinkClick}
                 >
                   Cancelled
+                </Link>
+                <Link
+                  to="/review"
+                  className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                  onClick={handleLinkClick}
+                >
+                  Reviews
                 </Link>
               </div>
             )}
@@ -137,12 +152,14 @@ const LoggedInNav = () => {
                     <Link
                       to="/profile"
                       className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                      onClick={handleLinkClick}
                     >
                       Edit Profile
                     </Link>
                     <Link
                       to="/edit-password"
                       className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                      onClick={handleLinkClick}
                     >
                       Edit Password
                     </Link>

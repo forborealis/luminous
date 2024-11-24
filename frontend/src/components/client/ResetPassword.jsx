@@ -31,7 +31,7 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100 font-montserrat mt-12 mb-12"> {/* Added margin-top and margin-bottom */}
+    <div className="flex justify-center items-center min-h-screen bg-white-100 font-montserrat mt-12 mb-12"> {/* Added margin-top and margin-bottom */}
       <ToastContainer /> {/* Add ToastContainer to display toasts */}
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
         <h2 className="text-2xl font-semibold mb-6 font-montserrat text-center">Reset Password</h2>

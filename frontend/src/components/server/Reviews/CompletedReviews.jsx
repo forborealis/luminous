@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import MUIDataTable from 'mui-datatables';
-import { Button, Box } from '@mui/material';
+import { Button, Box, ThemeProvider, CssBaseline } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify'; // Import toast
 import 'react-toastify/dist/ReactToastify.css'; // Toast styles
+import theme from './theme'; // Import the theme
 
 const CompletedReview = () => {
   const [reviews, setReviews] = useState([]);
@@ -130,25 +131,27 @@ const CompletedReview = () => {
   };
 
   return (
-    <div style={{ margin: '20px' }}>
-      <Box display="flex" justifyContent="space-between" marginBottom="20px">
-        <h1>Completed Reviews</h1>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => navigate('/admin/DeletedReviews')}
-        >
-          View Deleted Reviews
-        </Button>
-      </Box>
-      <MUIDataTable
-        title="Completed Reviews"
-        data={reviews}
-        columns={columns}
-        options={options}
-      />
-      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} /> {/* Toast container */}
-    </div>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <div style={{ margin: '20px', fontFamily: 'Montserrat' }}>
+        <Box display="flex" justifyContent="center" marginBottom="20px">
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate('/admin/DeletedReviews')}
+          >
+            View Deleted Reviews
+          </Button>
+        </Box>
+        <MUIDataTable
+          title="Completed Reviews"
+          data={reviews}
+          columns={columns}
+          options={options}
+        />
+        <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} /> {/* Toast container */}
+      </div>
+    </ThemeProvider>
   );
 };
 

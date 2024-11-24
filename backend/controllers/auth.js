@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const resetPass = require('../utils/sendEmail');
 const admin = require('firebase-admin');
-
+const { getAuth } = require('firebase-admin/auth');
 
 exports.registerUser = async (req, res) => {
   try {
@@ -39,13 +39,13 @@ exports.registerUser = async (req, res) => {
       name,
       username,
       email,
-      contactNumber: contactNumber || 'N/A', // Provide default value if not available
-      address: address || 'N/A', // Provide default value if not available
+      contactNumber: contactNumber || 'N/A', 
+      address: address || 'N/A', 
       avatar: {
         public_id: avatarPublicId,
         url: avatarUrl,
       },
-      status: status || 'Pending', // Set status to Verified for Google Sign-Up, otherwise Pending
+      status: status || 'Pending', 
     });
 
     await user.save();
@@ -403,7 +403,7 @@ exports.resetPassword = async (req, res) => {
 
     // Use Firebase Authentication to update the password
     const auth = getAuth();
-    await auth.updateUser(user.firebaseUID, { password: hashedPassword });
+    await auth.updateUser(user.firebaseUID, { password: newPassword });
 
     // Clear reset token and expiration
     user.resetPasswordToken = undefined;

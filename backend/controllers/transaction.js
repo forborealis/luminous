@@ -375,54 +375,74 @@ exports.updateOrderStatus = async (req, res) => {
       )
       .join("");
 
-    const emailContents = {
-      "Order Placed": {
-        subject: "Order Placed Confirmation",
-        message: `
-          <h1>Your Order Has Been Placed!</h1>
-          <p>Dear ${order.user.name},</p>
-          <p>Thank you for shopping with us. Your order has been successfully placed. Here are the details:</p>
-          <ul>${productList}</ul>
-          <p>Total Amount: ₱${order.totalAmount + 50}</p>
-        `,
-      },
-      "To Ship": {
-        subject: "Order Update: Preparing for Shipment",
-        message: `
-          <h1>Your Order is Being Prepared for Shipment!</h1>
-          <p>Dear ${order.user.name},</p>
-          <p>Your order is now being prepared for shipment. Here are the details:</p>
-          <ul>${productList}</ul>
-        `,
-      },
-      "Shipped": {
-        subject: "Order Shipped Notification",
-        message: `
-          <h1>Your Order Has Been Shipped!</h1>
-          <p>Dear ${order.user.name},</p>
-          <p>Your order is on its way. Here are the details:</p>
-          <ul>${productList}</ul>
-        `,
-      },
-      "Completed": {
-        subject: "Thank You for Your Purchase",
-        message: `
-          <h1>Thank You for Your Purchase!</h1>
-          <p>Dear ${order.user.name},</p>
-          <p>We are thrilled to inform you that your order has been successfully completed. Here are the details:</p>
-          <ul>${productList}</ul>
-        `,
-      },
-      "Cancelled": {
-        subject: "Order Cancellation Notice",
-        message: `
-          <h1>Order Cancellation Notice</h1>
-          <p>Dear ${order.user.name},</p>
-          <p>Your order has been cancelled. Here are the details:</p>
-          <ul>${productList}</ul>
-        `,
-      },
-    };
+      const emailContents = {
+        "Order Placed": {
+          subject: "Order Placed Confirmation",
+          message: `
+            <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px;">
+              <div style="max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 10px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+                <h1 style="color: #4CAF50;">Your Order Has Been Placed!</h1>
+                <p>Dear ${order.user.name},</p>
+                <p>Thank you for shopping with us. Your order has been successfully placed. Here are the details:</p>
+                <div>${productList}</div>
+                <p style="font-weight: bold;">Total Amount: ₱${order.totalAmount + 50}</p>
+              </div>
+            </div>
+          `,
+        },
+        "To Ship": {
+          subject: "Order Update: Preparing for Shipment",
+          message: `
+            <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px;">
+              <div style="max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 10px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+                <h1 style="color: #FFA500;">Your Order is Being Prepared for Shipment!</h1>
+                <p>Dear ${order.user.name},</p>
+                <p>Your order is now being prepared for shipment. Here are the details:</p>
+                <div>${productList}</div>
+              </div>
+            </div>
+          `,
+        },
+        "Shipped": {
+          subject: "Order Shipped Notification",
+          message: `
+            <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px;">
+              <div style="max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 10px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+                <h1 style="color: #1E90FF;">Your Order Has Been Shipped!</h1>
+                <p>Dear ${order.user.name},</p>
+                <p>Your order is on its way. Here are the details:</p>
+                <div>${productList}</div>
+              </div>
+            </div>
+          `,
+        },
+        "Completed": {
+          subject: "Thank You for Your Purchase",
+          message: `
+            <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px;">
+              <div style="max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 10px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+                <h1 style="color: #4CAF50;">Thank You for Your Purchase!</h1>
+                <p>Dear ${order.user.name},</p>
+                <p>We are thrilled to inform you that your order has been successfully completed. Here are the details:</p>
+                <div>${productList}</div>
+              </div>
+            </div>
+          `,
+        },
+        "Cancelled": {
+          subject: "Order Cancellation Notice",
+          message: `
+            <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px;">
+              <div style="max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 10px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+                <h1 style="color: #FF0000;">Order Cancellation Notice</h1>
+                <p>Dear ${order.user.name},</p>
+                <p>Your order has been cancelled. Here are the details:</p>
+                <div>${productList}</div>
+              </div>
+            </div>
+          `,
+        },
+      };
 
     const pushMessages = {
       "Order Placed": `Hi ${order.user.name}, your order has been successfully placed.`,

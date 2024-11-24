@@ -11,6 +11,7 @@ import {
   CircularProgress,
   Grid,
   Alert,
+  Container,
 } from '@mui/material';
 import { toast } from 'react-toastify';
 
@@ -72,7 +73,7 @@ const Review = () => {
   
       console.log('Review submitted successfully:', response.data);
       toast.success('Review submitted successfully');
-      navigate('/completed-orders');
+      navigate('/completed-order');
     } catch (err) {
       console.error('Error submitting review:', err);
       toast.error('Failed to submit review');
@@ -100,89 +101,78 @@ const Review = () => {
   }
 
   return (
-    <Box sx={{ maxWidth: 600, mx: 'auto', mt: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Write a Review for {product.name}
-      </Typography>
-      <Typography variant="body1" color="textSecondary" gutterBottom>
-        {product.description}
-      </Typography>
-      <img
-        src={product.images[0]}
-        alt={product.name}
-        style={{
-          width: '100%',
-          height: 'auto',
-          marginBottom: '16px',
-          borderRadius: '8px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-        }}
-      />
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Controller
-          name="reviewText"
-          control={control}
-          defaultValue=""
-          rules={{ required: 'Review text is required' }}
-          render={({ field }) => (
-            <TextField
-              {...field}
-              label="Review Text"
-              multiline
-              rows={4}
-              fullWidth
-              error={!!errors.reviewText}
-              helperText={errors.reviewText ? errors.reviewText.message : ''}
-              sx={{ mb: 2 }}
-            />
-          )}
-        />
+    <Container maxWidth="md" sx={{ mt: 4, mb: 4, fontFamily: 'Montserrat' }}>
+      <Box sx={{ p: 4, borderRadius: 2, boxShadow: 3, bgcolor: 'background.paper' }}>
+        <Typography variant="h5" gutterBottom textAlign="center" fontWeight="semibold" sx={{ fontFamily: 'Montserrat' }}>
+          Write a review for {product.name}
+        </Typography>
 
-        <Controller
-          name="rating"
-          control={control}
-          defaultValue={0}
-          rules={{ required: 'Rating is required' }}
-          render={({ field }) => (
-            <Box sx={{ mb: 2 }}>
-              <Typography component="legend">Rating</Typography>
-              <Rating
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Controller
+            name="reviewText"
+            control={control}
+            defaultValue=""
+            rules={{ required: 'Review text is required' }}
+            render={({ field }) => (
+              <TextField
                 {...field}
-                precision={0.5}
-                onChange={(event, value) => setValue('rating', value)}
+                label="Review Text"
+                multiline
+                rows={4}
+                fullWidth
+                error={!!errors.reviewText}
+                helperText={errors.reviewText ? errors.reviewText.message : ''}
+                sx={{ mb: 3, fontFamily: 'Montserrat', '& .MuiInputBase-root': { fontFamily: 'Montserrat' } }}
               />
-              {errors.rating && (
-                <Typography color="error">{errors.rating.message}</Typography>
-              )}
-            </Box>
-          )}
-        />
-
-        <Box sx={{ mb: 2 }}>
-          <Typography component="legend">Upload Images (Optional)</Typography>
-          <input
-            type="file"
-            multiple
-            accept="image/*"
-            {...register('images')}
-            style={{ marginTop: '8px' }}
+            )}
           />
-        </Box>
 
-        <Grid container spacing={2}>
-          <Grid item>
-            <Button type="submit" variant="contained" color="primary">
-              Submit Review
-            </Button>
+          <Controller
+            name="rating"
+            control={control}
+            defaultValue={0}
+            rules={{ required: 'Rating is required' }}
+            render={({ field }) => (
+              <Box sx={{ mb: 3 }}>
+                <Typography component="legend" sx={{ fontFamily: 'Montserrat' }}>Rating</Typography>
+                <Rating
+                  {...field}
+                  precision={0.5}
+                  onChange={(event, value) => setValue('rating', value)}
+                />
+                {errors.rating && (
+                  <Typography color="error" sx={{ fontFamily: 'Montserrat' }}>{errors.rating.message}</Typography>
+                )}
+              </Box>
+            )}
+          />
+
+          <Box sx={{ mb: 3 }}>
+            <Typography component="legend" sx={{ fontFamily: 'Montserrat' }}>Upload Images (Optional)</Typography>
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              {...register('images')}
+              style={{ marginTop: '8px' }}
+            />
+          </Box>
+
+          <Grid container spacing={2}>
+            <Grid item>
+              <Button type="submit" variant="contained" color="primary" sx={{ fontFamily: 'Montserrat' }}>
+                Submit Review
+              </Button>
+            </Grid>
+            <Grid item>
+              <Button variant="contained" color="error" onClick={() => navigate('/completed-order')} sx={{ fontFamily: 'Montserrat' }}>
+                Cancel
+              </Button>
+            </Grid>
           </Grid>
-          <Grid item>
-            <Button variant="outlined" color="secondary" onClick={() => navigate('/completed-orders')}>
-              Cancel
-            </Button>
-          </Grid>
-        </Grid>
-      </form>
-    </Box>
+        </form>
+      </Box>
+    </Container>
   );
 };
 

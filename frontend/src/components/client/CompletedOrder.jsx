@@ -87,8 +87,8 @@ const CompletedOrder = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontFamily: 'Montserrat' }}>Image</TableCell>
-              <TableCell sx={{ fontFamily: 'Montserrat' }}>Name</TableCell>
+              <TableCell sx={{ fontFamily: 'Montserrat' }}></TableCell>
+              <TableCell sx={{ fontFamily: 'Montserrat' }}>Product</TableCell>
               <TableCell sx={{ fontFamily: 'Montserrat' }}>Quantity</TableCell>
               <TableCell sx={{ fontFamily: 'Montserrat' }}>Price</TableCell>
               <TableCell sx={{ fontFamily: 'Montserrat' }}>Subtotal</TableCell>

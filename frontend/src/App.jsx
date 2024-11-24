@@ -30,7 +30,9 @@ import Checkout from './components/client/Checkout';
 import Order from './components/client/Order';
 import CancleOrder from './components/client/CancleOrder';
 import CompletedOrder from './components/client/CompletedOrder';
+import Review from './components/client/Review';
 import CreateReview from './components/client/CreateReview';
+import UpdateReview from './components/client/UpdateReview';
 
 
 
@@ -113,16 +115,34 @@ const App = () => {
                 <Route path="/cancle-order" element={
                   <ProtectedRoute>
                     <CancleOrder />
-                    </ProtectedRoute>} />
+                    </ProtectedRoute>
+                  } />
 
                     <Route path="/completed-order" element={
                   <ProtectedRoute>
                     <CompletedOrder />
-                    </ProtectedRoute>} />
+                    </ProtectedRoute>
+                  } />
+
+                  <Route path="/Review" element={
+                  <ProtectedRoute>
+                    <Review />
+                    </ProtectedRoute>
+                  } />
+
                     <Route path="/create-review/:productId" element={
                   <ProtectedRoute>
                     <CreateReview />
-                    </ProtectedRoute>} />
+                    </ProtectedRoute>
+                  } />
+
+                    <Route path="/update-review/:reviewId" element={
+                  <ProtectedRoute>
+                    <UpdateReview />
+                    </ProtectedRoute>
+                  } />
+
+                  
                 </Routes>
               </main>
             </>

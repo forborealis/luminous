@@ -49,6 +49,7 @@ const Sidebar = () => {
         <Item title="Orders" path="/admin/Order" icon={<SellOutlined/>} isExpanded={isExpanded} />
         <Item title="Completed Orders" path="/admin/OrderCompleted" icon={<CheckCircleOutlineOutlined/>} isExpanded={isExpanded} />
         <Item title="Cancelled Orders" path="/admin/OrderCancle" icon={<DoDisturbOutlined/>} isExpanded={isExpanded} />
+        <Item title="Reviews" path="/admin/CompletedReview" icon={<DoDisturbOutlined/>} isExpanded={isExpanded} />
       </List>
       <IconButton
         onClick={toggleSidebar}

@@ -12,6 +12,8 @@ import ProtectedAdminRoute from '../ProtectedAdminRoute'; // Import the Protecte
 import OrderTable from './Orders/OrderTable'; // Import the OrderTable component
 import OrderCancle from './Orders/OrderCancle'; // Import the OrderCancle component
 import OrderCompleted from './Orders/OrderCompleted'; // Import the OrderCompleted component
+import CompletedReviews from './Reviews/CompletedReviews';
+import DeletedReviews from './Reviews/DeletedReviews';
 import { ToastContainer } from 'react-toastify'; // Import ToastContainer
 import Chart from './Chart'; 
 import User from './Users/User';
@@ -72,6 +74,10 @@ const Dashboard = () => {
           <Route path="/chart" element={<ProtectedAdminRoute><Chart /></ProtectedAdminRoute>} />
           <Route path="/users/deactivate" element={<ProtectedAdminRoute><User /></ProtectedAdminRoute>} />
           <Route path="/users/deactivated" element={<ProtectedAdminRoute><DeactivatedUser /></ProtectedAdminRoute>} /> {/* Add the route for DeactivatedUser */}
+
+          {/* reviews route */}
+          <Route path="/DeletedReviews" element={<ProtectedAdminRoute><DeletedReviews /></ProtectedAdminRoute>} />
+          <Route path="/CompletedReview" element={<ProtectedAdminRoute><CompletedReviews /></ProtectedAdminRoute>} />
         </Routes>
         <ToastContainer /> {/* Add ToastContainer to display toasts */}
       </Box>

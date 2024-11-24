@@ -26,7 +26,7 @@ const CancleOrder = () => {
 
   const fetchCanceledOrders = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/v1/orders', {
+      const response = await axios.get('http://localhost:5000/api/v1/orders/user', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
 

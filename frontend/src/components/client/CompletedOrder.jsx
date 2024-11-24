@@ -25,21 +25,12 @@ const CompletedOrder = () => {
   const itemsPerPage = 6;
 
   const fetchCompletedOrders = async () => {
+    setLoading(true);
     try {
-      const response = await axios.get('http://localhost:5000/api/v1/orders', {
+      const response = await axios.get('http://localhost:5000/api/v1/completed-orders', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
-
-      const completed = response.data.orders.filter((order) => order.status === 'Completed');
-      setCompletedOrders(completed);
-
-      const initialImageIndex = {};
-      completed.forEach((order) =>
-        order.items.forEach((item) => {
-          initialImageIndex[item.product._id] = 0;
-        })
-      );
-      setCurrentImageIndex(initialImageIndex);
+      setCompletedOrders(response.data.orders);
     } catch (error) {
       console.error('Error fetching completed orders:', error);
     } finally {
@@ -52,7 +43,7 @@ const CompletedOrder = () => {
       const currentIndex = prevState[productId];
       const productImages = completedOrders
         .flatMap((order) => order.items)
-        .find((item) => item.product._id === productId).product.images;
+        .find((item) => item.product._id === productId)?.product.images;
 
       const newIndex =
         direction === 'next'
@@ -66,27 +57,6 @@ const CompletedOrder = () => {
   useEffect(() => {
     fetchCompletedOrders();
   }, []);
-
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
-        <CircularProgress />
-        <Typography variant="h6" color="textSecondary" sx={{ ml: 2 }}>
-          Loading...
-        </Typography>
-      </Box>
-    );
-  }
-
-  if (!completedOrders.length) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
-        <Typography variant="h6" color="textSecondary" sx={{ fontFamily: 'Montserrat' }}>
-          You have no completed orders.
-        </Typography>
-      </Box>
-    );
-  }
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
@@ -104,34 +74,33 @@ const CompletedOrder = () => {
 
   return (
     <div className="container mx-auto p-4">
-
-      {/* Button to navigate back */}
-      <Box mb={2} display="flex" justifyContent="flex-end">
+      <Box mb={2} display="flex" justifyContent="space-between">
         <Button onClick={() => navigate('/order')} variant="contained" color="primary">
           Back to Orders
         </Button>
+        <Button onClick={() => navigate('/review')} variant="contained" color="secondary">
+          Reviewed Products
+        </Button>
       </Box>
 
-      {completedOrders.length === 0 ? (
-        <div>No completed orders found.</div>
-      ) : (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ fontFamily: 'Montserrat' }}>Image</TableCell>
-                <TableCell sx={{ fontFamily: 'Montserrat' }}>Name</TableCell>
-                <TableCell sx={{ fontFamily: 'Montserrat' }}>Quantity</TableCell>
-                <TableCell sx={{ fontFamily: 'Montserrat' }}>Price</TableCell>
-                <TableCell sx={{ fontFamily: 'Montserrat' }}>Subtotal</TableCell>
-                <TableCell sx={{ fontFamily: 'Montserrat' }}>Shipping Fee</TableCell>
-                <TableCell sx={{ fontFamily: 'Montserrat' }}>Total</TableCell>
-                <TableCell sx={{ fontFamily: 'Montserrat' }}>Status</TableCell>
-            
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {paginatedItems.map((item) => {
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ fontFamily: 'Montserrat' }}>Image</TableCell>
+              <TableCell sx={{ fontFamily: 'Montserrat' }}>Name</TableCell>
+              <TableCell sx={{ fontFamily: 'Montserrat' }}>Quantity</TableCell>
+              <TableCell sx={{ fontFamily: 'Montserrat' }}>Price</TableCell>
+              <TableCell sx={{ fontFamily: 'Montserrat' }}>Subtotal</TableCell>
+              <TableCell sx={{ fontFamily: 'Montserrat' }}>Shipping Fee</TableCell>
+              <TableCell sx={{ fontFamily: 'Montserrat' }}>Total</TableCell>
+              <TableCell sx={{ fontFamily: 'Montserrat' }}>Status</TableCell>
+              <TableCell sx={{ fontFamily: 'Montserrat' }}>Action</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {paginatedItems.length > 0 ? (
+              paginatedItems.map((item) => {
                 const subtotal = item.product.price * item.quantity;
                 const total = subtotal + 50; // Including the shipping fee
                 const productImages = item.product.images;
@@ -174,33 +143,40 @@ const CompletedOrder = () => {
                     <TableCell sx={{ fontFamily: 'Montserrat' }}>₱{subtotal.toFixed(2)}</TableCell>
                     <TableCell sx={{ fontFamily: 'Montserrat' }}>₱50.00</TableCell>
                     <TableCell sx={{ fontFamily: 'Montserrat' }}>₱{total.toFixed(2)}</TableCell>
-            
+                    <TableCell sx={{ fontFamily: 'Montserrat' }}>{item.orderStatus}</TableCell>
                     <TableCell sx={{ fontFamily: 'Montserrat' }}>
-  {item.orderStatus === 'Completed' && (
-    <Button
-      onClick={() => navigate(`/create-review/${item.product._id}`)}
-      variant="outlined"
-      color="primary"
-    >
-      Review
-    </Button>
-  )}
-</TableCell>
+                      <Button
+                        onClick={() => navigate(`/create-review/${item.product._id}`)}
+                        variant="outlined"
+                        color="primary"
+                      >
+                        Review
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              })
+            ) : (
+              <TableRow>
+                <TableCell colSpan={9} align="center" sx={{ fontFamily: 'Montserrat' }}>
+                  No completed orders found.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {paginatedItems.length > 0 && (
+        <Box display="flex" justifyContent="center" mt={4}>
+          <Pagination
+            count={Math.ceil(flattenedItems.length / itemsPerPage)}
+            page={currentPage}
+            onChange={handlePageChange}
+            color="primary"
+          />
+        </Box>
       )}
-      <Box display="flex" justifyContent="center" mt={4}>
-        <Pagination
-          count={Math.ceil(flattenedItems.length / itemsPerPage)}
-          page={currentPage}
-          onChange={handlePageChange}
-          color="primary"
-        />
-      </Box>
     </div>
   );
 };

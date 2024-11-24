@@ -26,10 +26,15 @@ const reviewSchema = new mongoose.Schema({
     min: 0,
     max: 5,
   },
+  softDeleted: {
+    type: Boolean,
+    default: false, // By default, reviews are not deleted
+  },
   createdAt: {
     type: Date,
     default: Date.now,
   },
+
 });
 
 module.exports = mongoose.model('Review', reviewSchema);

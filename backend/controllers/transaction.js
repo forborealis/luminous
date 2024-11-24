@@ -1,25 +1,26 @@
 const Cart = require('../models/cart');
 const Order = require('../models/order');
 const Product = require('../models/products');
+const Review = require('../models/review');
 const sendEmail = require('../utils/email');
 const admin = require("../config/firebase-config");
 
 
-const sendPushNotification = async (fcmToken, title, body) => {
-  try {
-    const payload = {
-      notification: {
-        title,
-        body,
-      },
-    };
+// const sendPushNotification = async (fcmToken, title, body) => {
+//   try {
+//     const payload = {
+//       notification: {
+//         title,
+//         body,
+//       },
+//     };
 
-    const response = await admin.messaging().sendToDevice(fcmToken, payload);
-    console.log("Push notification response:", response);
-  } catch (error) {
-    console.error("Error sending push notification:", error.message);
-  }
-};
+//     const response = await admin.messaging().sendToDevice(fcmToken, payload);
+//     console.log("Push notification response:", response);
+//   } catch (error) {
+//     console.error("Error sending push notification:", error.message);
+//   }
+// };
 
 
 
@@ -280,6 +281,34 @@ exports.getUserOrders = async (req, res) => {
     res.status(500).json({ message: 'Error fetching orders' });
   }
 };
+
+exports.getCompletedOrders = async (req, res) => {
+  try {
+    console.log('getCompletedOrders hit');
+    const userId = req.user.id;
+
+    const completedOrders = await Order.find({ user: userId, status: 'Completed' })
+      .populate('items.product', 'name images price')
+      .lean();
+
+    const userReviews = await Review.find({ userId }).select('productId').lean();
+
+    const reviewedProductIds = new Set(userReviews.map((review) => review.productId.toString()));
+
+    const unreviewedCompletedOrders = completedOrders
+      .map((order) => ({
+        ...order,
+        items: order.items.filter((item) => !reviewedProductIds.has(item.product._id.toString())),
+      }))
+      .filter((order) => order.items.length > 0);
+
+    res.status(200).json({ orders: unreviewedCompletedOrders });
+  } catch (error) {
+    console.error('Error fetching completed orders:', error);
+    res.status(500).json({ message: 'Error fetching completed orders' });
+  }
+};
+
 
 exports.getAllOrders = async (req, res) => {
   try {

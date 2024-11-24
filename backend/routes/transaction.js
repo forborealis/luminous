@@ -11,6 +11,7 @@ const {
   updateOrderStatus,
   getAllOrders,
   getTotalOrders,
+  getCompletedOrders,
 } = require('../controllers/transaction');
 
 // Cart routes
@@ -23,8 +24,10 @@ router.delete('/cart', isAuthenticatedUser, removeFromCart);
 router.post('/checkout', isAuthenticatedUser, checkout);
 
 // Orders route
-router.get('/orders', isAuthenticatedUser, getUserOrders);
-router.get('/orders', getTotalOrders);
+router.get('/orders/user', isAuthenticatedUser, getUserOrders);
+router.get('/orders/total', getTotalOrders);
+router.get('/completed-orders', isAuthenticatedUser, getCompletedOrders);
+
 
 
 // OrderTable route

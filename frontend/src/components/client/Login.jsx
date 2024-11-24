@@ -237,11 +237,6 @@ const Login = () => {
                   />
                   <ErrorMessage name="password" component="div" className="text-red-500" />
                 </div>
-                <div className="flex justify-end mb-4">
-                  <Link to="/forgot-password" className="text-black text-sm">
-                    Forgot Password?
-                  </Link>
-                </div>
                 {error && <p className="text-red-500 mb-4">{error}</p>}
                 <button
                   type="submit"

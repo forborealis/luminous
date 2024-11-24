@@ -33,8 +33,14 @@ const customBadWords = [
   "tangina mo",
   "putang ina mo",
   "putang ina",
-  "tang ina",
+  "tangina",
   "tang ina mo",
+  "shit",
+  "fuck",
+  "stupid",
+  "motherfucker",
+  "fucker",
+  "damn",
 ];
 
 // Add custom bad words to wordfilter

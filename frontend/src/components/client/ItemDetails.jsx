@@ -1,53 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { toast } from "react-toastify"; // Import toast for notifications
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import axios from "axios";
-import { CircularProgress, Typography, Box, Rating, Avatar, Grid, Modal, IconButton } from "@mui/material";
-import wordfilter from "wordfilter"; // Import wordfilter
+import {
+  CircularProgress,
+  Typography,
+  Box,
+  Rating,
+  Avatar,
+  Grid,
+  Modal,
+  IconButton,
+  Button,
+} from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-
-// Define your custom bad words
-const customBadWords = [
-  "putangina",
-  "tangina",
-  "gago",
-  "ulol",
-  "pakyu",
-  "bobo",
-  "tanga",
-  "tarantado",
-  "leche",
-  "hayop",
-  "lintik",
-  "bwisit",
-  "siraulo",
-  "sira-ulo",
-  "hinayupak",
-  "peste",
-  "punyeta",
-  "yawa",
-  "demonyo",
-  "shet",
-  "syet",
-  "gunggong",
-  "tangina mo",
-  "putang ina mo",
-  "putang ina",
-  "tangina",
-  "tang ina mo",
-  "shit",
-  "fuck",
-  "stupid",
-  "motherfucker",
-  "fucker",
-  "damn",
-];
-
-// Add custom bad words to wordfilter
-wordfilter.addWords(customBadWords);
 
 const ItemDetails = () => {
   const { productId } = useParams();
@@ -58,20 +28,7 @@ const ItemDetails = () => {
   const [openModal, setOpenModal] = useState(false);
   const [currentImage, setCurrentImage] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  // Sanitize reviews using wordfilter
-  const sanitizeReviews = (reviews) => {
-    return reviews.map((review) => {
-      let sanitizedText = review.reviewText;
-      if (wordfilter.blacklisted(sanitizedText)) {
-        customBadWords.forEach((word) => {
-          const regex = new RegExp(`\\b${word}\\b`, "gi");
-          sanitizedText = sanitizedText.replace(regex, "****");
-        });
-      }
-      return { ...review, reviewText: sanitizedText };
-    });
-  };
+  const [adding, setAdding] = useState(false); // Track adding-to-cart state
 
   useEffect(() => {
     const fetchProductAndReviews = async () => {
@@ -79,10 +36,7 @@ const ItemDetails = () => {
         const productResponse = await axios.get(`http://localhost:5000/api/v1/products/${productId}`);
         const reviewsResponse = await axios.get(`http://localhost:5000/api/v1/reviews/${productId}`);
         setProduct(productResponse.data.product);
-
-        // Sanitize reviews
-        const sanitizedReviews = sanitizeReviews(reviewsResponse.data.reviews);
-        setReviews(sanitizedReviews);
+        setReviews(reviewsResponse.data.reviews);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -92,6 +46,35 @@ const ItemDetails = () => {
 
     fetchProductAndReviews();
   }, [productId]);
+
+  const handleAddToCart = async () => {
+    setAdding(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("You need to be logged in to add products to the cart!");
+        setAdding(false);
+        return;
+      }
+
+      const response = await axios.post(
+        "http://localhost:5000/api/v1/cart",
+        { productId, quantity: 1 },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      toast.success(response.data.message || "Product added to cart successfully!");
+    } catch (err) {
+      console.error(err);
+      toast.error(
+        err.response?.data?.message || "Failed to add product to the cart."
+      );
+    } finally {
+      setAdding(false);
+    }
+  };
 
   const handleOpenModal = (images, index) => {
     setCurrentImage(images);
@@ -161,9 +144,23 @@ const ItemDetails = () => {
           <p className="text-sm text-gray-600 mb-4">{product.category}</p>
           <p className="text-base text-gray-600 mb-4">Description: {product.description}</p>
           <p className="text-xl font-bold text-gray-600 mb-4">₱{product.price.toFixed(2)}</p>
+          <Button
+            variant="contained"
+            sx={{
+              bgcolor: "pink",
+              color: "white",
+              fontFamily: "Montserrat",
+              "&:hover": { bgcolor: "hotpink" },
+            }}
+            onClick={handleAddToCart}
+            disabled={adding}
+          >
+            {adding ? "ADDING..." : "Add to Cart"}
+          </Button>
         </div>
       </div>
 
+      {/* Reviews Section */}
       <Typography variant="h6" sx={{ mt: 4, fontFamily: 'Montserrat' }}>
         Reviews
       </Typography>
@@ -227,7 +224,7 @@ const ItemDetails = () => {
             left: '50%',
             transform: 'translate(-50%, -50%)',
             width: '80%',
-            bgcolor: 'transparent', // Set background to transparent
+            bgcolor: 'transparent',
             boxShadow: 24,
             p: 4,
             outline: 'none',

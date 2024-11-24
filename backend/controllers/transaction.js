@@ -284,21 +284,27 @@ exports.getUserOrders = async (req, res) => {
 
 exports.getCompletedOrders = async (req, res) => {
   try {
-    console.log('getCompletedOrders hit');
     const userId = req.user.id;
 
     const completedOrders = await Order.find({ user: userId, status: 'Completed' })
       .populate('items.product', 'name images price')
       .lean();
 
-    const userReviews = await Review.find({ userId }).select('productId').lean();
+    // Fetch reviews with both orderId and productId
+    const userReviews = await Review.find({ userId }).select('productId orderId').lean();
 
-    const reviewedProductIds = new Set(userReviews.map((review) => review.productId.toString()));
+    // Create a set with orderId-productId pairs
+    const reviewedItems = new Set(
+      userReviews.map((review) => `${review.orderId}-${review.productId}`)
+    );
 
+    // Filter out reviewed items based on both orderId and productId
     const unreviewedCompletedOrders = completedOrders
       .map((order) => ({
         ...order,
-        items: order.items.filter((item) => !reviewedProductIds.has(item.product._id.toString())),
+        items: order.items.filter(
+          (item) => !reviewedItems.has(`${order._id}-${item.product._id}`)
+        ),
       }))
       .filter((order) => order.items.length > 0);
 

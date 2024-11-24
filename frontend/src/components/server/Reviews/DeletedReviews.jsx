@@ -9,21 +9,7 @@ import theme from './theme'; // Import the theme
 
 const DeletedReviews = () => {
   const [deletedReviews, setDeletedReviews] = useState([]);
-  const [allUsers, setAllUsers] = useState([]);
   const navigate = useNavigate();
-
-  // Fetch all users at once
-  const fetchAllUsers = async () => {
-    try {
-      const response = await axios.get('http://localhost:5000/api/v1/users/verified', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
-      setAllUsers(response.data.users || []);
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      toast.error('Failed to fetch user details.');
-    }
-  };
 
   const fetchDeletedReviews = async () => {
     try {
@@ -31,25 +17,14 @@ const DeletedReviews = () => {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
 
-      const reviews = response.data.reviews;
+      const reviews = response.data.reviews.map((review) => ({
+        ...review,
+        userName: review.userId?.name || 'Unknown User',
+        productName: review.productId?.name || 'Unknown Product',
+        productImage: review.productId?.images?.[0] || null, // Use the first image if available
+      }));
 
-      // Match user details locally
-      const populatedReviews = reviews.map((review) => {
-        const user = allUsers.find((user) => user._id === review.userId) || {};
-        const product = {
-          name: review.productName || 'Unknown Product',
-          image: review.productImage || null,
-        };
-
-        return {
-          ...review,
-          userName: user.name || 'Unknown User',
-          productName: product.name,
-          productImage: product.image,
-        };
-      });
-
-      setDeletedReviews(populatedReviews);
+      setDeletedReviews(reviews);
     } catch (error) {
       console.error('Error fetching deleted reviews:', error);
       toast.error('An error occurred while fetching deleted reviews.');
@@ -71,14 +46,8 @@ const DeletedReviews = () => {
   };
 
   useEffect(() => {
-    fetchAllUsers();
+    fetchDeletedReviews();
   }, []);
-
-  useEffect(() => {
-    if (allUsers.length > 0) {
-      fetchDeletedReviews();
-    }
-  }, [allUsers]);
 
   const columns = [
     {
@@ -107,10 +76,16 @@ const DeletedReviews = () => {
     {
       name: 'productName',
       label: 'Product Name',
+      options: {
+        customBodyRender: (value) => (value ? value : 'Unknown Product'),
+      },
     },
     {
       name: 'reviewText',
       label: 'Review Text',
+      options: {
+        customBodyRender: (value) => (value ? value : 'No Review Text'),
+      },
     },
     {
       name: 'images',

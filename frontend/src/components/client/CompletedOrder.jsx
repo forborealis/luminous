@@ -67,6 +67,7 @@ const CompletedOrder = () => {
     order.items.map((item) => ({
       ...item,
       orderStatus: order.status,
+      orderId: order._id, // Include orderId for review navigation
     }))
   );
 
@@ -83,89 +84,97 @@ const CompletedOrder = () => {
         </Button>
       </Box>
 
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontFamily: 'Montserrat' }}></TableCell>
-              <TableCell sx={{ fontFamily: 'Montserrat' }}>Product</TableCell>
-              <TableCell sx={{ fontFamily: 'Montserrat' }}>Quantity</TableCell>
-              <TableCell sx={{ fontFamily: 'Montserrat' }}>Price</TableCell>
-              <TableCell sx={{ fontFamily: 'Montserrat' }}>Subtotal</TableCell>
-              <TableCell sx={{ fontFamily: 'Montserrat' }}>Shipping Fee</TableCell>
-              <TableCell sx={{ fontFamily: 'Montserrat' }}>Total</TableCell>
-              <TableCell sx={{ fontFamily: 'Montserrat' }}>Status</TableCell>
-              <TableCell sx={{ fontFamily: 'Montserrat' }}>Action</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {paginatedItems.length > 0 ? (
-              paginatedItems.map((item) => {
-                const subtotal = item.product.price * item.quantity;
-                const total = subtotal + 50; // Including the shipping fee
-                const productImages = item.product.images;
-                const currentIndex = currentImageIndex[item.product._id] || 0;
-
-                return (
-                  <TableRow key={item.product._id}>
-                    <TableCell sx={{ fontFamily: 'Montserrat' }}>
-                      <div className="relative flex flex-col items-center">
-                        <img
-                          src={productImages[currentIndex]}
-                          alt={item.product.name}
-                          className="w-16 h-16 object-cover mx-auto"
-                        />
-                        <div className="flex mt-2 gap-2">
-                          <button
-                            onClick={() => handleImageChange(item.product._id, 'prev')}
-                            disabled={productImages.length <= 1}
-                            className={`px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 ${
-                              productImages.length <= 1 ? 'opacity-50 cursor-not-allowed' : ''
-                            }`}
-                          >
-                            ←
-                          </button>
-                          <button
-                            onClick={() => handleImageChange(item.product._id, 'next')}
-                            disabled={productImages.length <= 1}
-                            className={`px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 ${
-                              productImages.length <= 1 ? 'opacity-50 cursor-not-allowed' : ''
-                            }`}
-                          >
-                            →
-                          </button>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell sx={{ fontFamily: 'Montserrat' }}>{item.product.name}</TableCell>
-                    <TableCell sx={{ fontFamily: 'Montserrat' }}>{item.quantity}</TableCell>
-                    <TableCell sx={{ fontFamily: 'Montserrat' }}>₱{item.product.price.toFixed(2)}</TableCell>
-                    <TableCell sx={{ fontFamily: 'Montserrat' }}>₱{subtotal.toFixed(2)}</TableCell>
-                    <TableCell sx={{ fontFamily: 'Montserrat' }}>₱50.00</TableCell>
-                    <TableCell sx={{ fontFamily: 'Montserrat' }}>₱{total.toFixed(2)}</TableCell>
-                    <TableCell sx={{ fontFamily: 'Montserrat' }}>{item.orderStatus}</TableCell>
-                    <TableCell sx={{ fontFamily: 'Montserrat' }}>
-                      <Button
-                        onClick={() => navigate(`/create-review/${item.product._id}`)}
-                        variant="outlined"
-                        color="primary"
-                      >
-                        Review
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            ) : (
+      {loading ? (
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="50vh">
+          <CircularProgress />
+        </Box>
+      ) : (
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
               <TableRow>
-                <TableCell colSpan={9} align="center" sx={{ fontFamily: 'Montserrat' }}>
-                  No completed orders found.
-                </TableCell>
+                <TableCell sx={{ fontFamily: 'Montserrat' }}></TableCell>
+                <TableCell sx={{ fontFamily: 'Montserrat' }}>Product</TableCell>
+                <TableCell sx={{ fontFamily: 'Montserrat' }}>Quantity</TableCell>
+                <TableCell sx={{ fontFamily: 'Montserrat' }}>Price</TableCell>
+                <TableCell sx={{ fontFamily: 'Montserrat' }}>Subtotal</TableCell>
+                <TableCell sx={{ fontFamily: 'Montserrat' }}>Shipping Fee</TableCell>
+                <TableCell sx={{ fontFamily: 'Montserrat' }}>Total</TableCell>
+                <TableCell sx={{ fontFamily: 'Montserrat' }}>Status</TableCell>
+                <TableCell sx={{ fontFamily: 'Montserrat' }}>Action</TableCell>
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {paginatedItems.length > 0 ? (
+                paginatedItems.map((item) => {
+                  const subtotal = item.product.price * item.quantity;
+                  const total = subtotal + 50; // Including the shipping fee
+                  const productImages = item.product.images;
+                  const currentIndex = currentImageIndex[item.product._id] || 0;
+
+                  return (
+                    <TableRow key={`${item.orderId}-${item.product._id}`}>
+                      <TableCell sx={{ fontFamily: 'Montserrat' }}>
+                        <div className="relative flex flex-col items-center">
+                          <img
+                            src={productImages[currentIndex]}
+                            alt={item.product.name}
+                            className="w-16 h-16 object-cover mx-auto"
+                          />
+                          <div className="flex mt-2 gap-2">
+                            <button
+                              onClick={() => handleImageChange(item.product._id, 'prev')}
+                              disabled={productImages.length <= 1}
+                              className={`px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 ${
+                                productImages.length <= 1 ? 'opacity-50 cursor-not-allowed' : ''
+                              }`}
+                            >
+                              ←
+                            </button>
+                            <button
+                              onClick={() => handleImageChange(item.product._id, 'next')}
+                              disabled={productImages.length <= 1}
+                              className={`px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 ${
+                                productImages.length <= 1 ? 'opacity-50 cursor-not-allowed' : ''
+                              }`}
+                            >
+                              →
+                            </button>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell sx={{ fontFamily: 'Montserrat' }}>{item.product.name}</TableCell>
+                      <TableCell sx={{ fontFamily: 'Montserrat' }}>{item.quantity}</TableCell>
+                      <TableCell sx={{ fontFamily: 'Montserrat' }}>₱{item.product.price.toFixed(2)}</TableCell>
+                      <TableCell sx={{ fontFamily: 'Montserrat' }}>₱{subtotal.toFixed(2)}</TableCell>
+                      <TableCell sx={{ fontFamily: 'Montserrat' }}>₱50.00</TableCell>
+                      <TableCell sx={{ fontFamily: 'Montserrat' }}>₱{total.toFixed(2)}</TableCell>
+                      <TableCell sx={{ fontFamily: 'Montserrat' }}>{item.orderStatus}</TableCell>
+                      <TableCell sx={{ fontFamily: 'Montserrat' }}>
+                        <Button
+                          onClick={() =>
+                            navigate(`/create-review/${item.product._id}?orderId=${item.orderId}`)
+                          }
+                          variant="outlined"
+                          color="primary"
+                        >
+                          Review
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={9} align="center" sx={{ fontFamily: 'Montserrat' }}>
+                    No completed orders found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
       {paginatedItems.length > 0 && (
         <Box display="flex" justifyContent="center" mt={4}>

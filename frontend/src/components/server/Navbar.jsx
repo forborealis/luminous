@@ -10,6 +10,11 @@ const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('isAdmin');
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("firebaseUID");
+    localStorage.removeItem("checkoutDetails");
+    localStorage.removeItem("notifications");
     window.dispatchEvent(new Event('loginStateChange')); // Dispatch the event
     navigate('/login');
   };

@@ -39,44 +39,61 @@ const uploadToCloudinary = async (files) => {
   
 
 // Create a review
+// Create a review
 exports.createReview = async (req, res) => {
-    try {
-      console.log('Request Body:', req.body);
-      console.log('Files Received:', req.files);
-  
-      const { productId, reviewText, rating } = req.body;
-      const userId = req.user.id;
-  
-      if (!productId || !reviewText || !rating) {
-        return res.status(400).json({ message: 'All fields are required' });
-      }
-  
-      // Upload files to Cloudinary
-      const uploadedImages = req.files?.length
-        ? await uploadToCloudinary(req.files)
-        : [];
-  
-      console.log('Uploaded Images:', uploadedImages);
-  
-      // Create review in the database
-      const review = await Review.create({
-        productId,
-        userId,
-        reviewText,
-        images: uploadedImages,
-        rating,
-      });
-  
-      // Update the product's rating
-      await Product.updateRating(productId);
-  
-      res.status(201).json({ message: 'Review created successfully', review });
-    } catch (error) {
-      console.error('Error creating review:', error);
-      res.status(500).json({ message: 'Internal Server Error' });
+  try {
+    console.log('Request Body:', req.body);
+    console.log('Files Received:', req.files);
+
+    const { productId, reviewText, rating } = req.body;
+    const userId = req.user.id;
+
+    // Validate required fields
+    if (!productId || !reviewText || !rating) {
+      return res.status(400).json({ message: 'All fields are required' });
     }
-  };
-  
+
+    // Upload images to Cloudinary if any
+    const uploadedImages = req.files?.length
+      ? await uploadToCloudinary(req.files)
+      : [];
+
+    console.log('Uploaded Images:', uploadedImages);
+
+    // Create the review in the database
+    const review = await Review.create({
+      productId,
+      userId,
+      reviewText,
+      images: uploadedImages,
+      rating,
+    });
+
+    // Recalculate the product's average rating and total reviews
+    const validReviews = await Review.find({
+      productId,
+      softDeleted: { $ne: true },
+    });
+
+    const totalReviews = validReviews.length;
+    const averageRating =
+      totalReviews > 0
+        ? validReviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews
+        : 0;
+
+    // Update the product with the new average rating and total reviews
+    await Product.findByIdAndUpdate(productId, {
+      totalReviews,
+      averageRating,
+    });
+
+    res.status(201).json({ message: 'Review created successfully', review });
+  } catch (error) {
+    console.error('Error creating review:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
   
 
 // Get reviews for a product
@@ -148,35 +165,63 @@ exports.getReviewById = async (req, res) => {
 exports.updateReview = async (req, res) => {
   try {
     const { reviewId } = req.params;
+    const { reviewText, rating } = req.body;
+
+    // Validate review ID
     if (!mongoose.Types.ObjectId.isValid(reviewId)) {
       return res.status(400).json({ message: 'Invalid review ID' });
     }
 
-    const { reviewText, rating } = req.body;
+    // Find the review
     const review = await Review.findById(reviewId);
-
     if (!review) {
       return res.status(404).json({ message: 'Review not found' });
     }
 
+    // Check if the logged-in user is authorized to update this review
     if (review.userId.toString() !== req.user.id) {
       return res.status(403).json({ message: 'Unauthorized to update this review' });
     }
 
+    // Handle uploaded images if any
     if (req.files) {
       const uploadedImages = await uploadToCloudinary(req.files);
       review.images = uploadedImages;
     }
 
+    // Update review fields
     review.reviewText = reviewText;
     review.rating = rating;
 
+    // Save the updated review
     await review.save();
+
+    // Recalculate the product's average rating and total reviews
+    const productId = review.productId;
+    const validReviews = await Review.find({
+      productId,
+      softDeleted: { $ne: true },
+    });
+
+    const totalReviews = validReviews.length;
+    const averageRating =
+      totalReviews > 0
+        ? validReviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews
+        : 0;
+
+    // Update product details
+    await Product.findByIdAndUpdate(productId, {
+      totalReviews,
+      averageRating,
+    });
+
     res.status(200).json({ message: 'Review updated successfully', review });
   } catch (error) {
+    console.error('Error updating review:', error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
 
 
 // Soft Delete a Review
@@ -197,6 +242,31 @@ exports.softDeleteReview = async (req, res) => {
     if (!review) {
       return res.status(404).json({ message: 'Review not found' });
     }
+
+    // Recalculate product rating and total reviews after soft deletion
+    const productId = review.productId;
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Fetch all non-deleted reviews for this product
+    const validReviews = await Review.find({
+      productId: productId,
+      softDeleted: { $ne: true },
+    });
+
+    const totalReviews = validReviews.length;
+    const averageRating =
+      totalReviews > 0
+        ? validReviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews
+        : 0;
+
+    // Update the product's totalReviews and averageRating
+    product.totalReviews = totalReviews;
+    product.averageRating = averageRating;
+    await product.save();
 
     res.status(200).json({ message: 'Review soft deleted successfully', review });
   } catch (error) {
@@ -220,6 +290,31 @@ exports.permanentDeleteReview = async (req, res) => {
       return res.status(404).json({ message: 'Review not found' });
     }
 
+    // Recalculate product rating and total reviews after permanent deletion
+    const productId = review.productId;
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Fetch all non-deleted reviews for this product
+    const validReviews = await Review.find({
+      productId: productId,
+      softDeleted: { $ne: true },
+    });
+
+    const totalReviews = validReviews.length;
+    const averageRating =
+      totalReviews > 0
+        ? validReviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews
+        : 0;
+
+    // Update the product's totalReviews and averageRating
+    product.totalReviews = totalReviews;
+    product.averageRating = averageRating;
+    await product.save();
+
     res.status(200).json({ message: 'Review permanently deleted', review });
   } catch (error) {
     console.error('Error deleting review:', error);
@@ -231,14 +326,17 @@ exports.permanentDeleteReview = async (req, res) => {
 
 exports.getDeletedReviews = async (req, res) => {
   try {
-    // Fetch reviews where softDeleted is true
-    const reviews = await Review.find({ softDeleted: true }, { userId: 1, productId: 1, reviewText: 1, rating: 1, images: 1 });
+    // Fetch reviews where softDeleted is true and populate user and product details
+    const reviews = await Review.find({ softDeleted: true })
+      .populate('userId', 'name') // Populate user's name
+      .populate('productId', 'name images'); // Populate product's name and images
 
-    // Send minimal data for frontend to handle population
+    // Send populated reviews to the frontend
     res.status(200).json({ reviews });
   } catch (error) {
     console.error('Error fetching deleted reviews:', error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
 

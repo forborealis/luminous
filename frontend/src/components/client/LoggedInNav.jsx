@@ -14,11 +14,20 @@ const LoggedInNav = () => {
   const navigate = useNavigate();
 
   const handleSignOut = () => {
+    // Clear all relevant keys from localStorage
     localStorage.removeItem("token");
-    window.dispatchEvent(new Event('loginStateChange')); 
+    localStorage.removeItem("role");
+    localStorage.removeItem("firebaseUID");
+    localStorage.removeItem("checkoutDetails");
+    
+    // Trigger a custom event to update login state across the app
+    window.dispatchEvent(new Event('loginStateChange'));
+    
+    // Update state and navigate to login page
     setIsLoggedIn(false);
     navigate("/login");
   };
+  
 
   const handleCartClick = () => {
     navigate("/cart"); 

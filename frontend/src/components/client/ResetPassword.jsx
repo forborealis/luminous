@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 
@@ -18,7 +18,9 @@ const ResetPassword = () => {
 
       if (response.data.success) {
         toast.success('Password updated successfully.');
-        navigate('/login');
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000); // Delay navigation to allow toast to be visible
       } else {
         toast.error(response.data.message);
       }
@@ -29,7 +31,8 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100 font-montserrat">
+    <div className="flex justify-center items-center min-h-screen bg-gray-100 font-montserrat mt-12 mb-12"> {/* Added margin-top and margin-bottom */}
+      <ToastContainer /> {/* Add ToastContainer to display toasts */}
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
         <h2 className="text-2xl font-semibold mb-6 font-montserrat text-center">Reset Password</h2>
         <form onSubmit={handleSubmit}>
@@ -40,7 +43,7 @@ const ResetPassword = () => {
             <input
               type="password"
               id="newPassword"
-              className="w-full px-3 py-2 border rounded font-montserrat"
+              className="w-full px-3 py-2 border rounded-lg font-montserrat" // Rounded edges
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
@@ -48,7 +51,7 @@ const ResetPassword = () => {
           </div>
           <button
             type="submit"
-            className="w-full bg-coral-red text-white py-2 rounded hover:bg-coral-red-dark font-montserrat"
+            className="w-full bg-coral-red text-white py-2 rounded-lg hover:bg-coral-red-dark font-montserrat" // Rounded edges
           >
             Reset Password
           </button>

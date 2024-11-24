@@ -397,11 +397,17 @@ exports.resetPassword = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid or expired token' });
     }
 
-    // Update password and clear reset token and expiration
-    user.password = newPassword;
+    // Hash the new password before saving
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Use Firebase Authentication to update the password
+    const auth = getAuth();
+    await auth.updateUser(user.firebaseUID, { password: hashedPassword });
+
+    // Clear reset token and expiration
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
-
     await user.save();
 
     res.status(200).json({ success: true, message: 'Password updated successfully' });
